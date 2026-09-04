@@ -1,1311 +1,299 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聖經尋寶大冒險</title>
-
-    <style>
-        :root {
-            --primary: #2c3e50;
-            --accent: #e67e22;
-            --bg: #f4f6f8;
-            --card-bg: #ffffff;
-            --text: #333;
-            --muted: #777;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family:
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                "Noto Sans TC",
-                Arial,
-                sans-serif;
-            background: var(--bg);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .game-container {
-            width: 100%;
-            max-width: 480px;
-            background: var(--card-bg);
-            border-radius: 18px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.10);
-            padding: 20px;
-            margin: auto 0;
-        }
-
-        h1 {
-            font-size: 21px;
-            text-align: center;
-            color: var(--primary);
-            margin: 0 0 18px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: var(--muted);
-            font-size: 13px;
-            margin-top: -10px;
-            margin-bottom: 18px;
-        }
-
-        .select-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        select {
-            width: 100%;
-            padding: 13px;
-            font-size: 16px;
-            border-radius: 9px;
-            border: 1px solid #ccc;
-            background: #fff;
-        }
-
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #eef2f5;
-            padding: 10px 12px;
-            border-radius: 9px;
-            margin-bottom: 15px;
-        }
-
-        .tokens {
-            font-size: 18px;
-            font-weight: bold;
-            color: #e74c3c;
-        }
-
-        .route-name {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
-        }
-
-        .card {
-            border: 2px solid var(--primary);
-            border-radius: 13px;
-            padding: 17px;
-            background: #fff;
-            margin-bottom: 15px;
-        }
-
-        .node-number {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 4px;
-        }
-
-        .loc-title {
-            font-size: 23px;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 12px;
-        }
-
-        .scenario {
-            font-size: 16px;
-            color: var(--text);
-            line-height: 1.65;
-            margin-bottom: 18px;
-            text-align: left;
-        }
-
-        .choice-label {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 8px;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-direction: column;
-        }
-
-        button {
-            padding: 15px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            border-radius: 9px;
-            cursor: pointer;
-            transition: 0.15s;
-        }
-
-        button:active {
-            transform: scale(0.98);
-            opacity: 0.9;
-        }
-
-        .btn-opt {
-            background-color: #3498db;
-            color: white;
-        }
-
-        .btn-opt.alt {
-            background-color: #e67e22;
-        }
-
-        .btn-main {
-            width: 100%;
-            margin-top: 15px;
-            background-color: #3498db;
-            color: white;
-        }
-
-        .btn-reset {
-            padding: 7px 10px;
-            font-size: 12px;
-            background: #95a5a6;
-            color: #fff;
-        }
-
-        .result {
-            text-align: center;
-        }
-
-        .result-icon {
-            font-size: 48px;
-            margin-bottom: 8px;
-        }
-
-        .result-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .result-text {
-            font-size: 15px;
-            line-height: 1.6;
-            color: #555;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .progress {
-            display: flex;
-            gap: 4px;
-            margin-bottom: 12px;
-        }
-
-        .progress-dot {
-            height: 5px;
-            flex: 1;
-            background: #ddd;
-            border-radius: 5px;
-        }
-
-        .progress-dot.done {
-            background: #3498db;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>聖經尋寶大冒險 - 9點迷宮版</title>
+<style>
+    :root {
+        --primary: #2c3e50;
+        --accent: #e67e22;
+        --bg: #f8f9fa;
+        --card-bg: #ffffff;
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        background: var(--bg);
+        margin: 0;
+        padding: 15px;
+        display: flex;
+        justify-content: center;
+    }
+    .game-container {
+        width: 100%;
+        max-width: 480px;
+        background: var(--card-bg);
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
+    .select-group { margin-bottom: 15px; }
+    select {
+        width: 100%; padding: 12px; font-size: 16px;
+        border-radius: 8px; border: 1px solid #ccc; background: #fff;
+    }
+    .status-bar {
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 8px; background: #eef2f5; padding: 10px 12px;
+        border-radius: 8px; margin-bottom: 15px;
+    }
+    .tokens { font-size: 18px; font-weight: bold; color: #e74c3c; }
+    .top-buttons { display: flex; gap: 6px; }
+    .small-btn {
+        padding: 7px 9px; font-size: 12px; background: #95a5a6;
+        color: #fff; border: none; border-radius: 7px; cursor: pointer;
+    }
+    .card {
+        border: 2px solid var(--primary); border-radius: 12px;
+        padding: 15px; text-align: center; background: #fff; margin-bottom: 15px;
+    }
+    .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
+    .scenario { font-size: 15px; color: #555; line-height: 1.5; margin-bottom: 15px; text-align: left; }
+    .btn-group { display: flex; gap: 10px; flex-direction: column; }
+    button {
+        padding: 14px; font-size: 15px; font-weight: bold;
+        border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-opt { background-color: #3498db; color: white; }
+    .btn-opt:nth-child(even) { background-color: #e67e22; }
+    button:active { transform: scale(0.98); opacity: 0.9; }
+    .hidden { display: none; }
+    .hint {
+        font-size: 12px; color: #777; margin-top: 10px; text-align: center;
+    }
+</style>
 </head>
-
 <body>
 
 <div class="game-container">
-
     <h1>⛪ 聖經尋寶大冒險</h1>
 
-    <!-- =========================
-         SETUP
-    ========================== -->
-    <div id="setup-screen">
-
-        <div class="subtitle">
-            選擇一條旅程，靠你哋自己揀路！
-        </div>
-
-        <div class="select-group">
-            <label for="pathSelect">
-                <b>請選擇遊戲路線：</b>
-            </label>
-
-            <select id="pathSelect">
-                <option value="p1">1. 出埃及記曠野路程</option>
-                <option value="p2">2. 保羅宣教之旅</option>
-                <option value="p3">3. 亞伯拉罕信心之旅</option>
-                <option value="p4">4. 福音書耶穌靴履之旅</option>
-            </select>
-
-            <button class="btn-main" onclick="startGame()">
-                開始旅程
-            </button>
-        </div>
-
+    <div class="select-group" id="setup-screen">
+        <label for="pathSelect"><b>請選擇遊戲路線：</b></label>
+        <select id="pathSelect">
+            <option value="p0">0. 新手教學試玩路線 (Tutorial)</option>
+            <option value="p1">1. 出埃及記曠野路程</option>
+            <option value="p2">2. 保羅宣教之旅</option>
+            <option value="p3">3. 亞伯拉罕信心之旅</option>
+            <option value="p4">4. 福音書耶穌靴履之旅</option>
+        </select>
+        <button class="btn-opt" style="width:100%; margin-top:15px;" onclick="startGame()">開始遊戲</button>
     </div>
 
-
-    <!-- =========================
-         GAME
-    ========================== -->
     <div id="game-screen" class="hidden">
-
         <div class="status-bar">
-
-            <div>
-                <div>
-                    剩餘 Token：
-                    <span class="tokens" id="token-count">7</span>
-                    🪙
-                </div>
-
-                <div class="route-name" id="route-name">
-                    路線
-                </div>
+            <div>剩餘 Token：<span class="tokens" id="token-count">9</span> 🪙</div>
+            <div class="top-buttons">
+                <button class="small-btn" onclick="resetGame()">重玩</button>
+                <button class="small-btn" onclick="backToMenu()">換路線</button>
             </div>
-
-            <button class="btn-reset" onclick="resetGame()">
-                重新開始
-            </button>
-
         </div>
-
-
-        <div class="progress" id="progress">
-            <!-- 動態產生 -->
-        </div>
-
 
         <div class="card">
-
-            <div class="node-number" id="node-number">
-                位置 1
-            </div>
-
-            <div class="loc-title" id="loc-name">
-                起點
-            </div>
-
-            <div class="scenario" id="scenario-text">
-                情境載入中……
-            </div>
-
-            <div class="choice-label">
-                你會選擇：
-            </div>
-
-            <div class="btn-group" id="action-buttons">
-                <!-- 動態產生 -->
-            </div>
-
+            <div class="loc-title" id="loc-name">起點</div>
+            <div class="scenario" id="scenario-text">情境載入中...</div>
+            <div class="btn-group" id="action-buttons"></div>
+            <div class="hint">每作一次選擇消耗 1 Token；兩個選項都會前進。</div>
         </div>
-
     </div>
-
 </div>
 
-
 <script>
+/*
+TOPOLOGY DESIGN — 9 nodes
+Main shortest route: 1 → 3 → 5 → 6 → 8 → 9
+True shortest distances:
+1=5, 3=4, 5=3, 6=2, 8=1, 9=0
+Distractors:
+2=4, 4=3, 7=4
 
-/* =========================================================
-   GAME TOPOLOGY
-   =========================================================
+Wrong-choice penalties from the main route:
+1 → 1  = +1 (loop back to same location; still consumes a move)
+3 → 2  = +1
+5 → 4  = +1
+6 → 4  = +2
+8 → 6  = +2
 
-   9 nodes
+Distractor maze:
+2 → 7 and 7 → 2 create a death loop.
+Both still have an escape to 4.
+4 → 7 is a +2 setback, while 4 → 6 is the shortest escape.
 
-   1: A → 2, B → 3
-   2: A → 3, B → 4
-   3: A → 1, B → 5
-   4: A → 6, B → 2
-   5: A → 8, B → 4
-   6: A → 7, B → 4
-   7: A → 4, B → 6
-   8: A → 1, B → 9
-   9: END
-
-   Shortest winning route:
-
-   1 → 3 → 5 → 8 → 9
-   B → B → A → B
-
-   4 moves / 5 locations
-
-========================================================= */
-
+The topology is shared by all routes; Bible content is only the setting/skin.
+*/
 
 const gameData = {
-
-
-    /* =====================================================
-       P1 — 出埃及記曠野路程
-    ===================================================== */
+    p0: {
+        name: "新手教學試玩路線",
+        startToken: 5,
+        nodes: {
+            1: { name:"教學起點", text:"前面有兩條看似合理的路。記住：每次選擇都會前進，但有些路會令你兜圈。", A:{txt:"沿著眼前小徑轉入林邊",next:1}, B:{txt:"向遠處較清楚的路標前進",next:3} },
+            2: { name:"迷霧岔路", text:"你發現自己進入一片霧區，遠處似乎有另一個出口。", A:{txt:"朝著較亮的方向走",next:4}, B:{txt:"追著剛才留下的腳印走",next:7} },
+            3: { name:"山口", text:"風勢突然變大，兩條路都可以繼續前進。", A:{txt:"轉入一條較窄的側路",next:2}, B:{txt:"沿山脊方向前進",next:5} },
+            4: { name:"石坡", text:"前面出現陡坡，旁邊另有一條通往低處的路。", A:{txt:"攀上前面的高坡",next:6}, B:{txt:"沿著低處小徑繞過去",next:7} },
+            5: { name:"林中岔口", text:"你聞到一陣食物香味，但完全看不到煙。兩個方向都似乎有可能找到來源。", A:{txt:"沿著香味較濃的方向深入",next:6}, B:{txt:"繞到另一邊尋找高位觀察",next:4} },
+            6: { name:"狹窄山徑", text:"你已經很接近目的地，但前方有一個岔口。", A:{txt:"沿著山徑繼續向前",next:8}, B:{txt:"轉入旁邊較寬的路",next:4} },
+            7: { name:"霧中小徑", text:"你開始覺得四周景物很熟悉，好像剛才已經來過。", A:{txt:"轉向石坡尋找出口",next:4}, B:{txt:"跟著另一串腳印走",next:2} },
+            8: { name:"最後岔口", text:"前方已經隱約看到終點，但旁邊還有一條路通向另一個方向。", A:{txt:"轉入旁邊的山徑",next:6}, B:{txt:"直向前往終點",next:9} },
+            9: { name:"終點", text:"🎉 恭喜！你成功抵達終點！", end:true }
+        }
+    },
 
     p1: {
-
-        name: "出埃及記曠野路程",
-
-        startToken: 7,
-
-        nodes: {
-
-            1: {
-                name: "蘭塞 (埃及)",
-
-                text:
-                    "你哋準備離開埃及。前面有兩條可以離開城區嘅路：一條沿著大道向前，另一條向夜色較深嘅方向繞出去。",
-
-                A: {
-                    txt: "沿著大道向東走",
-                    next: 2
-                },
-
-                B: {
-                    txt: "轉向夜色較深嘅方向走",
-                    next: 3
-                }
-            },
-
-
-            2: {
-                name: "比哈希錄",
-
-                text:
-                    "你哋行到海邊，前面係大片水域。遠處有一段較平坦嘅海岸線，另一邊就見到一條通往高地嘅路。",
-
-                A: {
-                    txt: "沿海岸線向前走",
-                    next: 3
-                },
-
-                B: {
-                    txt: "轉向高地繞過海灣",
-                    next: 4
-                }
-            },
-
-
-            3: {
-                name: "瑪拉",
-
-                text:
-                    "你哋終於搵到水源，但水味道好奇怪。附近有一條細路向樹林入面延伸，另一邊就有山坡可以望到更遠。",
-
-                A: {
-                    txt: "入樹林尋找另一個水源",
-                    next: 1
-                },
-
-                B: {
-                    txt: "上山坡尋找遠處嘅水源",
-                    next: 5
-                }
-            },
-
-
-            4: {
-                name: "汛曠野",
-
-                text:
-                    "沙漠地勢開始變得崎嶇。前面有一條穿過山谷嘅路，另一條則似乎沿住較熟悉嘅方向返回水源地。",
-
-                A: {
-                    txt: "穿過前面嘅山谷",
-                    next: 6
-                },
-
-                B: {
-                    txt: "沿原來方向返回水源地帶",
-                    next: 2
-                }
-            },
-
-
-            5: {
-                name: "利非訂",
-
-                text:
-                    "你哋發現前面有一大片岩石地。左邊傳來水聲，右邊則有一條較乾爽嘅高地路線。",
-
-                A: {
-                    txt: "向水聲方向落入岩石谷",
-                    next: 8
-                },
-
-                B: {
-                    txt: "沿高地路線繞過山谷",
-                    next: 4
-                }
-            },
-
-
-            6: {
-                name: "基博羅哈他瓦",
-
-                text:
-                    "強風吹過曠野，沙塵令視線變得模糊。你哋見到前面有一條較清楚嘅路，但另一邊亦有動物腳印通向遠方。",
-
-                A: {
-                    txt: "跟住動物腳印前進",
-                    next: 7
-                },
-
-                B: {
-                    txt: "沿清楚嘅沙漠道路前進",
-                    next: 4
-                }
-            },
-
-
-            7: {
-                name: "哈洗錄",
-
-                text:
-                    "四周山坡越來越密。你哋見到兩個方向：一邊有一條窄窄嘅山路，另一邊似乎可以穿過較低嘅山谷。",
-
-                A: {
-                    txt: "沿窄山路向上走",
-                    next: 4
-                },
-
-                B: {
-                    txt: "向低處山谷走",
-                    next: 6
-                }
-            },
-
-
-            8: {
-                name: "加低斯巴尼亞",
-
-                text:
-                    "你哋去到曠野邊緣。遠處可以望到一片較肥沃嘅土地，但中間隔住山脈。左邊有山口，右邊有較長嘅繞山路。",
-
-                A: {
-                    txt: "穿過前面嘅山口",
-                    next: 1
-                },
-
-                B: {
-                    txt: "繞過山脈向遠方平地走",
-                    next: 9
-                }
-            },
-
-
-            9: {
-                name: "迦南應許之地",
-
-                text:
-                    "你哋終於走出曠野，眼前係一片寬闊肥沃嘅土地。旅程完成！🎉",
-
-                end: true
-            }
-
+        name:"出埃及記曠野路程",
+        startToken:9,
+        nodes:{
+            1:{name:"蘭塞（埃及）",text:"你哋準備離開營地。前面一條路貼近水邊，另一條向內陸延伸。",A:{txt:"沿水邊小路前進",next:1},B:{txt:"向遠處山口方向走",next:3}},
+            2:{name:"比哈希錄",text:"霧氣遮住前方，遠處似乎有微弱燈光。",A:{txt:"朝燈光方向走",next:4},B:{txt:"沿著舊腳印轉入另一條路",next:7}},
+            3:{name:"瑪拉",text:"你哋見到水源附近有兩條路：一條穿過樹林，一條沿高地前進。",A:{txt:"穿過樹林尋找出口",next:2},B:{txt:"沿高地路線前進",next:5}},
+            4:{name:"汛曠野",text:"地勢開始升高，前面有一段陡坡，亦有小路繞到低處。",A:{txt:"直接攀上陡坡",next:6},B:{txt:"沿低處繞行",next:7}},
+            5:{name:"利非訂",text:"你哋聞到一陣食物香味，但完全睇唔到煙。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"上山丘搵高位觀察",next:4}},
+            6:{name:"基博羅哈他瓦",text:"山徑變得狹窄，前面有一個分岔口。",A:{txt:"沿著較窄山徑繼續",next:8},B:{txt:"轉入較闊的側路",next:4}},
+            7:{name:"哈洗錄",text:"四周霧氣很濃，你哋開始覺得好似兜咗一圈。",A:{txt:"向石坡方向走",next:4},B:{txt:"追另一串腳印",next:2}},
+            8:{name:"加低斯巴尼亞",text:"你哋已經隱約見到前方目的地，但旁邊仍有一條路。",A:{txt:"轉入旁邊山徑",next:6},B:{txt:"沿直路向前",next:9}},
+            9:{name:"迦南應許之地",text:"🎉 恭喜！你哋成功抵達目的地！",end:true}
         }
     },
-
-
-    /* =====================================================
-       P2 — 保羅宣教之旅
-    ===================================================== */
 
     p2: {
-
-        name: "保羅宣教之旅",
-
-        startToken: 7,
-
-        nodes: {
-
-            1: {
-                name: "安提阿",
-
-                text:
-                    "旅程開始。前面有兩種交通方式：可以先走陸路去下一個城鎮，亦可以前往港口乘船。",
-
-                A: {
-                    txt: "沿陸路大道向前走",
-                    next: 2
-                },
-
-                B: {
-                    txt: "前往港口搭帆船",
-                    next: 3
-                }
-            },
-
-
-            2: {
-                name: "塞浦路斯",
-
-                text:
-                    "你哋來到島上。前面係一條沿海道路，亦有一條向島中央山地延伸嘅路。",
-
-                A: {
-                    txt: "沿海岸線向前行",
-                    next: 3
-                },
-
-                B: {
-                    txt: "穿過島中央山路",
-                    next: 4
-                }
-            },
-
-
-            3: {
-                name: "特羅亞",
-
-                text:
-                    "你哋來到海港。海面風勢唔算太強。前面有一艘船準備出發，而城外亦有一條陸路通往內陸。",
-
-                A: {
-                    txt: "離開港口，沿陸路向內陸走",
-                    next: 1
-                },
-
-                B: {
-                    txt: "登船，向海上另一邊航行",
-                    next: 5
-                }
-            },
-
-
-            4: {
-                name: "別加",
-
-                text:
-                    "你哋來到山路交界。前面一條路越過山嶺，另一條路向後方港口方向下降。",
-
-                A: {
-                    txt: "翻過山嶺繼續前進",
-                    next: 6
-                },
-
-                B: {
-                    txt: "沿山坡下降返回港口方向",
-                    next: 2
-                }
-            },
-
-
-            5: {
-                name: "腓立比",
-
-                text:
-                    "城市外有兩條路。一條通往內陸城市，另一條沿住古老道路繞過山丘。",
-
-                A: {
-                    txt: "沿內陸大道前進",
-                    next: 8
-                },
-
-                B: {
-                    txt: "沿山丘外圍繞路",
-                    next: 4
-                }
-            },
-
-
-            6: {
-                name: "帖撒羅尼迦",
-
-                text:
-                    "天色開始轉暗。前面有一條較短嘅山路，亦有一條沿海方向嘅大路。",
-
-                A: {
-                    txt: "穿過山路前往下一個城鎮",
-                    next: 7
-                },
-
-                B: {
-                    txt: "沿海岸大道繼續走",
-                    next: 4
-                }
-            },
-
-
-            7: {
-                name: "庇哩亞",
-
-                text:
-                    "你哋來到城外。前面可以向山上走，亦可以沿低地道路返回較大嘅城市。",
-
-                A: {
-                    txt: "沿山路向上走",
-                    next: 4
-                },
-
-                B: {
-                    txt: "沿低地道路前進",
-                    next: 6
-                }
-            },
-
-
-            8: {
-                name: "哥林多",
-
-                text:
-                    "你哋來到繁忙港口。遠處有一艘大型商船準備出海，亦有一條陸路通往帝國大道。",
-
-                A: {
-                    txt: "離開港口，沿陸路向前",
-                    next: 1
-                },
-
-                B: {
-                    txt: "登上前往羅馬方向嘅大型船隻",
-                    next: 9
-                }
-            },
-
-
-            9: {
-                name: "羅馬",
-
-                text:
-                    "你哋終於抵達羅馬，長途旅程完成！🎉",
-
-                end: true
-            }
-
+        name:"保羅宣教之旅",
+        startToken:9,
+        nodes:{
+            1:{name:"安提阿",text:"出發後遇到分岔：一條沿海，一條向山區。",A:{txt:"沿海岸線前進",next:1},B:{txt:"向山口方向前進",next:3}},
+            2:{name:"塞浦路斯",text:"海風吹來，前面出現一盞遠處的燈。",A:{txt:"朝燈光靠近",next:4},B:{txt:"跟住岸邊舊路走",next:7}},
+            3:{name:"特羅亞",text:"你哋見到兩條小路，一條較窄但似乎通往高地。",A:{txt:"轉入窄路",next:2},B:{txt:"沿高地方向走",next:5}},
+            4:{name:"別加",text:"山路開始變斜，亦有一條路可以繞過斜坡。",A:{txt:"翻過前面的山坡",next:6},B:{txt:"沿低處繞路",next:7}},
+            5:{name:"腓立比",text:"你哋聞到一陣食物香味，但睇唔到附近有任何火光。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"登上高地尋找來源",next:4}},
+            6:{name:"帖撒羅尼迦",text:"前面道路分開兩邊，一條窄，一條闊。",A:{txt:"沿窄路直走",next:8},B:{txt:"轉入闊路",next:4}},
+            7:{name:"庇哩亞",text:"你哋開始發現幾個地標重複出現。",A:{txt:"向石坡方向轉",next:4},B:{txt:"沿另一串腳印走",next:2}},
+            8:{name:"哥林多",text:"前方已經見到目的地的輪廓，但旁邊還有另一條路。",A:{txt:"轉入側路",next:6},B:{txt:"直向目的地前進",next:9}},
+            9:{name:"羅馬",text:"🎉 恭喜！你哋成功抵達終點！",end:true}
         }
     },
-
-
-    /* =====================================================
-       P3 — 亞伯拉罕信心之旅
-    ===================================================== */
 
     p3: {
-
-        name: "亞伯拉罕信心之旅",
-
-        startToken: 7,
-
-        nodes: {
-
-            1: {
-                name: "吾珥",
-
-                text:
-                    "你哋準備離開熟悉嘅地方。前面有一條適合牲畜行走嘅大道，另一邊則係較少人行嘅沙地路線。",
-
-                A: {
-                    txt: "帶住牲畜沿大道前進",
-                    next: 2
-                },
-
-                B: {
-                    txt: "沿沙地路線向遠方走",
-                    next: 3
-                }
-            },
-
-
-            2: {
-                name: "哈蘭",
-
-                text:
-                    "你哋來到河流附近。可以沿住河流向南走，亦可以離開河邊，穿過山地。",
-
-                A: {
-                    txt: "沿河流向南走",
-                    next: 3
-                },
-
-                B: {
-                    txt: "離開河邊，穿過山地",
-                    next: 4
-                }
-            },
-
-
-            3: {
-                name: "示劍",
-
-                text:
-                    "前面有一大片平原。遠處見到水源附近有人活動，而山坡方向就比較少人。",
-
-                A: {
-                    txt: "向山坡方向尋找新路",
-                    next: 1
-                },
-
-                B: {
-                    txt: "沿水源方向穿過平原",
-                    next: 5
-                }
-            },
-
-
-            4: {
-                name: "艾城外圍",
-
-                text:
-                    "牧群需要繼續前進。前面有肥沃平原，另一邊則係熟悉嘅舊路。",
-
-                A: {
-                    txt: "向肥沃平原走",
-                    next: 6
-                },
-
-                B: {
-                    txt: "沿舊路返回北面",
-                    next: 2
-                }
-            },
-
-
-            5: {
-                name: "希伯崙 (幔利橡樹)",
-
-                text:
-                    "你哋來到一片有大樹遮蔭嘅地方。前面有一條通往山區嘅小路，另一邊則係寬闊平原。",
-
-                A: {
-                    txt: "沿山路向高地走",
-                    next: 8
-                },
-
-                B: {
-                    txt: "沿平原向另一個聚居地走",
-                    next: 4
-                }
-            },
-
-
-            6: {
-                name: "所多瑪郊野",
-
-                text:
-                    "前面係一大片平原，遠處有山。你哋可以沿平坦大道走，亦可以直接向山區進發。",
-
-                A: {
-                    txt: "沿平原大道繼續走",
-                    next: 7
-                },
-
-                B: {
-                    txt: "向山區方向走",
-                    next: 4
-                }
-            },
-
-
-            7: {
-                name: "瑣珥小鎮",
-
-                text:
-                    "小鎮外有兩條路。一條向山上延伸，另一條沿平原返回較低地區。",
-
-                A: {
-                    txt: "帶住隊伍向山上走",
-                    next: 4
-                },
-
-                B: {
-                    txt: "沿平原低地前進",
-                    next: 6
-                }
-            },
-
-
-            8: {
-                name: "摩利亞山",
-
-                text:
-                    "你哋來到高山地區。山口前有兩條路：一條直接向下離開山區，另一條繼續向山頂前進。",
-
-                A: {
-                    txt: "沿山坡向下走",
-                    next: 1
-                },
-
-                B: {
-                    txt: "繼續向山頂前進",
-                    next: 9
-                }
-            },
-
-
-            9: {
-                name: "應許成就 (賜福之源)",
-
-                text:
-                    "漫長旅程終於走到目的地。你哋完成咗呢段信心之旅！🎉",
-
-                end: true
-            }
-
+        name:"亞伯拉罕信心之旅",
+        startToken:9,
+        nodes:{
+            1:{name:"吾珥",text:"隊伍準備出發。前面有一條河邊路和一條通往山丘的路。",A:{txt:"沿河邊小路走",next:1},B:{txt:"向山丘方向走",next:3}},
+            2:{name:"哈蘭",text:"霧中見到遠處有微光，亦有一串舊腳印。",A:{txt:"向微光方向走",next:4},B:{txt:"跟住腳印轉入小徑",next:7}},
+            3:{name:"示劍",text:"你哋來到一個高地岔路口。",A:{txt:"轉入樹林小路",next:2},B:{txt:"沿高地繼續走",next:5}},
+            4:{name:"艾城外圍",text:"前面係陡坡，旁邊有低處小路。",A:{txt:"直接攀坡",next:6},B:{txt:"繞低處行",next:7}},
+            5:{name:"希伯崙（幔利橡樹）",text:"你哋聞到食物香味，卻完全睇唔到煙。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"上高位尋找來源",next:4}},
+            6:{name:"所多瑪郊野",text:"山徑變窄，前面出現兩個方向。",A:{txt:"沿窄山徑前進",next:8},B:{txt:"轉入較闊側路",next:4}},
+            7:{name:"瑣珥小鎮",text:"你哋開始覺得沿途景物好熟悉。",A:{txt:"向石坡方向走",next:4},B:{txt:"追另一串腳印",next:2}},
+            8:{name:"摩利亞山",text:"已經隱約見到目的地，但另一條路仍然通向遠方。",A:{txt:"轉入側路",next:6},B:{txt:"沿直路前往終點",next:9}},
+            9:{name:"應許成就",text:"🎉 恭喜！你哋成功抵達終點！",end:true}
         }
     },
 
-
-    /* =====================================================
-       P4 — 福音書耶穌靴履之旅
-    ===================================================== */
-
     p4: {
-
-        name: "福音書耶穌靴履之旅",
-
-        startToken: 7,
-
-        nodes: {
-
-            1: {
-                name: "拿撒勒 / 加利利",
-
-                text:
-                    "你哋準備開始旅程。前面有一條沿村落而行嘅陸路，亦可以向湖邊走，尋找船隻。",
-
-                A: {
-                    txt: "沿陸路穿過村落",
-                    next: 2
-                },
-
-                B: {
-                    txt: "向加利利海邊走",
-                    next: 3
-                }
-            },
-
-
-            2: {
-                name: "迦百農",
-
-                text:
-                    "前面係湖邊。湖面平靜，可以搭船；如果唔想落水，亦可以沿山邊小路前進。",
-
-                A: {
-                    txt: "搭船向湖對岸走",
-                    next: 3
-                },
-
-                B: {
-                    txt: "沿山邊小路繼續走",
-                    next: 4
-                }
-            },
-
-
-            3: {
-                name: "伯賽大",
-
-                text:
-                    "黃昏前，你哋來到湖邊。前面有船準備離岸，另一邊係沿湖岸通往內陸嘅道路。",
-
-                A: {
-                    txt: "沿湖岸向內陸走",
-                    next: 1
-                },
-
-                B: {
-                    txt: "乘船渡過湖面",
-                    next: 5
-                }
-            },
-
-
-            4: {
-                name: "格拉森",
-
-                text:
-                    "湖邊風勢開始變強。你哋可以沿岸向北走，亦可以離開湖邊，走入山谷。",
-
-                A: {
-                    txt: "沿湖岸向北前進",
-                    next: 6
-                },
-
-                B: {
-                    txt: "轉入山谷避開湖邊",
-                    next: 2
-                }
-            },
-
-
-            5: {
-                name: "凱撒利亞腓立比",
-
-                text:
-                    "你哋來到山區。前面有一條向耶路撒冷方向延伸嘅山路，另一邊則有較低、較平坦嘅道路。",
-
-                A: {
-                    txt: "沿山路向高地前進",
-                    next: 8
-                },
-
-                B: {
-                    txt: "沿低地道路繞山而行",
-                    next: 4
-                }
-            },
-
-
-            6: {
-                name: "耶利哥",
-
-                text:
-                    "天氣炎熱。前面有一條直接穿過山谷嘅路，亦有一條向高處走、比較有遮蔭嘅山路。",
-
-                A: {
-                    txt: "沿山谷道路前進",
-                    next: 7
-                },
-
-                B: {
-                    txt: "轉上山路避開炎熱",
-                    next: 4
-                }
-            },
-
-
-            7: {
-                name: "伯法其",
-
-                text:
-                    "你哋已經接近耶路撒冷。前面有一條較陡嘅山路，亦有一條繞過山坡嘅道路。",
-
-                A: {
-                    txt: "直接沿山坡向上走",
-                    next: 4
-                },
-
-                B: {
-                    txt: "繞過山坡再向前走",
-                    next: 6
-                }
-            },
-
-
-            8: {
-                name: "客西馬尼園",
-
-                text:
-                    "夜色漸深。前面可以直接沿山路進入城區，亦可以繼續向另一邊嘅道路走。",
-
-                A: {
-                    txt: "離開山園，沿山路向外走",
-                    next: 1
-                },
-
-                B: {
-                    txt: "沿另一條路繼續向前",
-                    next: 9
-                }
-            },
-
-
-            9: {
-                name: "空墳墓 (主已復活)",
-
-                text:
-                    "旅程最後來到空墳墓。你哋完成咗整段旅程！🎉",
-
-                end: true
-            }
-
+        name:"福音書耶穌靴履之旅",
+        startToken:9,
+        nodes:{
+            1:{name:"拿撒勒／加利利",text:"你哋準備出發，一條路靠近湖邊，另一條向山丘延伸。",A:{txt:"沿湖邊前進",next:1},B:{txt:"向山丘方向走",next:3}},
+            2:{name:"迦百農",text:"前面有霧，遠處似乎有燈光。",A:{txt:"朝燈光方向走",next:4},B:{txt:"跟住腳印轉入小徑",next:7}},
+            3:{name:"伯賽大",text:"湖邊有兩條路，一條入林，一條向高地。",A:{txt:"穿過樹林",next:2},B:{txt:"沿高地走",next:5}},
+            4:{name:"格拉森",text:"前面有陡坡，旁邊有路可以繞到低處。",A:{txt:"攀上陡坡",next:6},B:{txt:"沿低處繞行",next:7}},
+            5:{name:"凱撒利亞腓立比",text:"你哋聞到食物香味，但完全睇唔到煙。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"上高位尋找來源",next:4}},
+            6:{name:"耶利哥",text:"前方道路分岔，一條窄，一條闊。",A:{txt:"沿窄路前進",next:8},B:{txt:"轉入較闊側路",next:4}},
+            7:{name:"伯法其",text:"幾個地標重複出現，你哋開始懷疑自己兜圈。",A:{txt:"向石坡方向走",next:4},B:{txt:"跟另一串腳印",next:2}},
+            8:{name:"客西馬尼園",text:"前方已經隱約見到目的地，但旁邊仍有另一條路。",A:{txt:"轉入側路",next:6},B:{txt:"直向前方走",next:9}},
+            9:{name:"空墳墓",text:"🎉 恭喜！你哋成功抵達終點！",end:true}
         }
     }
-
 };
 
-
-/* =========================================================
-   GAME STATE
-========================================================= */
-
 let currentPath = null;
-let currentPathKey = null;
+let currentPathId = null;
 let currentNode = 1;
-let tokens = 7;
-
-
-/* =========================================================
-   START
-========================================================= */
+let tokens = 9;
+let gameOver = false;
 
 function startGame() {
-
-    const selected =
-        document.getElementById("pathSelect").value;
-
-    currentPathKey = selected;
+    const selected = document.getElementById('pathSelect').value;
+    currentPathId = selected;
     currentPath = gameData[selected];
 
-    document
-        .getElementById("setup-screen")
-        .classList.add("hidden");
-
-    document
-        .getElementById("game-screen")
-        .classList.remove("hidden");
-
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
     resetGame();
 }
 
-
-/* =========================================================
-   RESET
-========================================================= */
-
 function resetGame() {
-
+    if (!currentPath) return;
     currentNode = 1;
-
-    tokens =
-        currentPath.startToken || 7;
-
+    tokens = currentPath.startToken || 9;
+    gameOver = false;
     updateUI();
 }
 
+function backToMenu() {
+    currentPath = null;
+    currentPathId = null;
+    currentNode = 1;
+    tokens = 9;
+    gameOver = false;
 
-/* =========================================================
-   PROGRESS
-========================================================= */
-
-function updateProgress() {
-
-    const progress =
-        document.getElementById("progress");
-
-    progress.innerHTML = "";
-
-    for (let i = 1; i <= 8; i++) {
-
-        const dot =
-            document.createElement("div");
-
-        dot.className = "progress-dot";
-
-        if (i < currentNode) {
-            dot.classList.add("done");
-        }
-
-        progress.appendChild(dot);
-    }
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('setup-screen').classList.remove('hidden');
 }
 
-
-/* =========================================================
-   UPDATE UI
-========================================================= */
-
 function updateUI() {
+    const node = currentPath.nodes[currentNode];
 
-    const node =
-        currentPath.nodes[currentNode];
+    document.getElementById('token-count').innerText = tokens;
+    document.getElementById('loc-name').innerText = node.name;
+    document.getElementById('scenario-text').innerText = node.text;
 
-    document.getElementById("token-count")
-        .innerText = tokens;
-
-    document.getElementById("route-name")
-        .innerText = currentPath.name;
-
-    document.getElementById("node-number")
-        .innerText = "位置 " + currentNode;
-
-    document.getElementById("loc-name")
-        .innerText = node.name;
-
-    document.getElementById("scenario-text")
-        .innerText = node.text;
-
-    updateProgress();
-
-    const actionBox =
-        document.getElementById("action-buttons");
-
-
-    /* =========================
-       END
-    ========================== */
+    const actionBox = document.getElementById('action-buttons');
 
     if (node.end) {
-
-        actionBox.innerHTML = `
-            <div class="result">
-
-                <div class="result-icon">🎉</div>
-
-                <div class="result-title">
-                    成功抵達終點！
-                </div>
-
-                <div class="result-text">
-                    你哋用咗
-                    <b>${currentPath.startToken - tokens}</b>
-                    步完成旅程。
-                    <br><br>
-                    可以再挑戰一次，睇下今次會行邊條路！
-                </div>
-
-                <button
-                    class="btn-main"
-                    onclick="resetGame()">
-                    再挑戰一次
-                </button>
-
-            </div>
-        `;
-
+        gameOver = true;
+        actionBox.innerHTML =
+            `<button class="btn-opt" style="width:100%" onclick="resetGame()">重新挑戰本路線</button>
+             <button class="btn-opt" style="width:100%; margin-top:10px;" onclick="backToMenu()">返回路線選擇</button>`;
         return;
     }
 
-
-    /* =========================
-       RANDOMIZE A/B POSITION
-    ========================== */
-
     const choices = [
-
-        {
-            key: "A",
-            txt: node.A.txt
-        },
-
-        {
-            key: "B",
-            txt: node.B.txt
-        }
-
+        { key: 'A', txt: node.A.txt },
+        { key: 'B', txt: node.B.txt }
     ];
 
-
-    /*
-       Randomly swap the physical
-       position of A and B.
-
-       Therefore:
-       top button ≠ always A
-       bottom button ≠ always B
-    */
-
-    if (Math.random() < 0.5) {
-        choices.reverse();
-    }
-
+    // Randomize physical button order so A/B cannot be memorized by position.
+    if (Math.random() < 0.5) choices.reverse();
 
     actionBox.innerHTML = `
-
-        <button
-            class="btn-opt"
-            onclick="makeChoice('${choices[0].key}')">
-
-            ${choices[0].txt}
-
-        </button>
-
-        <button
-            class="btn-opt alt"
-            onclick="makeChoice('${choices[1].key}')">
-
-            ${choices[1].txt}
-
-        </button>
-
+        <button class="btn-opt" onclick="makeChoice('${choices[0].key}')">${choices[0].txt}</button>
+        <button class="btn-opt" onclick="makeChoice('${choices[1].key}')">${choices[1].txt}</button>
     `;
 }
 
-
-/* =========================================================
-   MAKE CHOICE
-========================================================= */
-
 function makeChoice(choiceKey) {
+    if (!currentPath || gameOver || tokens <= 0) return;
 
-    if (tokens <= 0) {
-        return;
-    }
-
-    const node =
-        currentPath.nodes[currentNode];
-
-    const nextNodeId =
-        node[choiceKey].next;
-
-
-    /* Spend one Token */
+    const node = currentPath.nodes[currentNode];
+    const nextNodeId = node[choiceKey].next;
 
     tokens--;
+    currentNode = nextNodeId;
 
-
-    /* ACTUAL MOVEMENT */
-
-    currentNode =
-        nextNodeId;
-
-
-    /* =========================
-       SUCCESS
-    ========================== */
-
-    if (
-        currentPath.nodes[currentNode].end
-    ) {
-
+    if (currentPath.nodes[currentNode].end) {
         updateUI();
-
-        setTimeout(() => {
-
-            alert(
-                "🎉 恭喜！你哋成功抵達終點！"
-            );
-
-        }, 100);
-
-        return;
-    }
-
-
-    /* =========================
-       TOKEN USED UP
-    ========================== */
-
-    if (tokens === 0) {
-
+        setTimeout(() => alert("🎉 恭喜！成功抵達終點！"), 50);
+    } else if (tokens === 0) {
+        gameOver = true;
         updateUI();
-
         setTimeout(() => {
-
-            alert(
-                "🪙 Token 用盡！\n\n" +
-                "你哋仲未到達終點，今次旅程失敗。"
-            );
-
-            resetGame();
-
-        }, 100);
-
-        return;
+            alert("🪙 Token 用盡！你哋今次迷路咗。可以重新挑戰，或者返回路線選擇。");
+        }, 50);
+    } else {
+        updateUI();
     }
-
-
-    /* =========================
-       CONTINUE
-    ========================== */
-
-    updateUI();
 }
-
 </script>
-
 </body>
 </html>
