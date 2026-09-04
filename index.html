@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教會尋寶大冒險 - FSA Game</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
+        .select-group { margin-bottom: 15px; }
+        select {
+            width: 100%; padding: 12px; font-size: 16px;
+            border-radius: 8px; border: 1px solid #ccc; background: #fff;
+        }
+        .status-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #eef2f5; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;
+        }
+        .tokens { font-size: 18px; font-weight: bold; color: #e74c3c; }
+        .card {
+            border: 2px solid var(--primary); border-radius: 12px; padding: 15px;
+            text-align: center; background: #fff; margin-bottom: 15px;
+        }
+        .loc-title { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
+        .scenario { font-size: 16px; color: #555; line-height: 1.5; margin-bottom: 15px; }
+        .btn-group { display: flex; gap: 10px; flex-direction: column; }
+        button {
+            padding: 14px; font-size: 16px; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-a { background-color: #3498db; color: white; }
+        .btn-b { background-color: #e67e22; color: white; }
+        .btn-reset { background-color: #95a5a6; color: white; margin-top: 15px; width: 100%; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+        .history {
+            margin-top: 15px; padding: 10px; background: #f0f3f4;
+            border-radius: 8px; font-size: 14px; color: #666;
+        }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>⛪ 教會尋寶大冒險</h1>
+
+    <!-- 路線選擇器 -->
+    <div class="select-group" id="setup-screen">
+        <label for="pathSelect"><b>請選擇遊戲路線：</b></label>
+        <select id="pathSelect">
+            <option value="p1">1. 出埃及記曠野路程</option>
+            <option value="p2">2. 保羅宣教之旅</option>
+            <option value="p3">3. 亞伯拉罕信心之旅</option>
+            <option value="p4">4. 福音書耶穌靴履之旅</option>
+        </select>
+        <button class="btn-a" style="width: 100%; margin-top: 15px;" onclick="startGame()">開始遊戲</button>
+    </div>
+
+    <!-- 遊戲主介面 -->
+    <div id="game-screen" class="hidden">
+        <div class="status-bar">
+            <div>剩餘 Token：<span class="tokens" id="token-count">7</span> 🪙</div>
+            <button style="padding: 5px 10px; font-size: 12px;" onclick="resetGame()">重來</button>
+        </div>
+
+        <div class="card">
+            <div class="loc-title" id="loc-name">1. 起點</div>
+            <div class="scenario" id="scenario-text">情境載入中...</div>
+            <div class="btn-group" id="action-buttons">
+                <button class="btn-a" id="btn-a" onclick="makeChoice('A')">選項 A</button>
+                <button class="btn-b" id="btn-b" onclick="makeChoice('B')">選項 B</button>
+            </div>
+        </div>
+
+        <div class="history">
+            <b>行走紀錄：</b>
+            <div id="history-list">1. 起點</div>
+        </div>
+    </div>
+</div>
+
+<script>
+const gameData = {
+    p1: {
+        name: "出埃及記曠野路程",
+        nodes: {
+            1: { name: "1. 埃及", text: "旅程正式開始！大家準備好深夜出發，你哋想跟邊個指引向前行？", A: { txt: "雲柱", next: 2 }, B: { txt: "火柱", next: 3 } },
+            2: { name: "2. 紅海", text: "前面係海水，領袖要帶領咁多人過海，你哋會點樣行？", A: { txt: "徒步", next: 3 }, B: { txt: "騎牲口", next: 4 } },
+            3: { name: "3. 瑪拉", text: "喺沙漠休息補充物資，你哋想領取邊種食物繼續上路？", A: { txt: "瑪娜", next: 1 }, B: { txt: "鵪鶉", next: 5 } },
+            4: { name: "4. 訊曠野", text: "前面嘅路好多石頭好難行，你哋個隊伍想行邊條路？", A: { txt: "山路", next: 3 }, B: { txt: "平原", next: 2 } },
+            5: { name: "5. 利非訂", text: "太陽好猛烈！要橫過呢片大沙漠，你哋揀邊種交通工具？", A: { txt: "駱駝隊", next: 6 }, B: { txt: "馬車", next: 4 } },
+            6: { name: "6. 西奈山", text: "大家去到聖山山腳，最後一程要點樣靠上帝嘅大能衝過？", A: { txt: "擊打磐石取水", next: 1 }, B: { txt: "舉手禱告求勝", next: 7 } },
+            7: { name: "7. 迦南地", text: "恭喜！你哋成功到達流奶與蜜嘅應許之地啦！🎉", end: true }
+        }
+    },
+    p2: {
+        name: "保羅宣教之旅",
+        nodes: {
+            1: { name: "1. 安提阿", text: "安提阿教會差遣你哋出發！要踏上地中海，你哋會搭邊種船？", A: { txt: "帆船", next: 2 }, B: { txt: "槳船", next: 3 } },
+            2: { name: "2. 塞浦路斯", text: "去到塞浦路斯小島，你哋想靠邊一種風吹動船隻繼續航行？", A: { txt: "西風", next: 3 }, B: { txt: "南風", next: 4 } },
+            3: { name: "3. 特羅亞", text: "喺異象中收到呼喚要橫渡愛琴海，去到陸地之後你哋打算點樣行？", A: { txt: "步行", next: 1 }, B: { txt: "騎馬", next: 5 } },
+            4: { name: "4. 腓立比", text: "離開城市城牆，沿住海岸線，你哋想行邊條通道？", A: { txt: "沿海路", next: 3 }, B: { txt: "內陸路", next: 2 } },
+            5: { name: "5. 哥林多", text: "去到繁忙嘅哥林多港口，有兩艘商船可以搭，你哋揀邊艘？", A: { txt: "客商船", next: 6 }, B: { txt: "載貨船", next: 4 } },
+            6: { name: "6. 雅典", text: "喺雅典講完道，要向西出發去帝國首都，你哋揀邊個時間開船？", A: { txt: "日間航行", next: 1 }, B: { txt: "夜間航行", next: 7 } },
+            7: { name: "7. 羅馬", text: "恭喜！你哋終於去到羅馬，將福音傳到帝國嘅中心！🎉", end: true }
+        }
+    },
+    p3: {
+        name: "亞伯拉罕信心之旅",
+        nodes: {
+            1: { name: "1. 吾珥", text: "收到呼召要離開迦勒底嘅吾珥，你哋會用咩搬運家當出發？", A: { txt: "駱駝隊", next: 2 }, B: { txt: "驢仔車", next: 3 } },
+            2: { name: "2. 哈蘭", text: "喺哈蘭住咗一段時間，係時候繼續南下，帳棚隊伍行邊條路？", A: { txt: "山谷路", next: 3 }, B: { txt: "丘陵路", next: 4 } },
+            3: { name: "3. 示劍", text: "喺大樹下築壇，點知遇到饑荒，你哋隊伍要點樣移動去搵食物？", A: { txt: "急行軍", next: 1 }, B: { txt: "慢行放牧", next: 5 } },
+            4: { name: "4. 伯特利", text: "喺伯特利同艾城中間支搭帳棚，牛群羊群要向邊個方向放牧？", A: { txt: "向北行", next: 3 }, B: { txt: "向南行", next: 2 } },
+            5: { name: "5. 埃及(約瑟)", text: "過了幾代之後，法老邀請雅各全家搬去肥沃嘅土地住，你哋點樣過去？", A: { txt: "法老馬車", next: 6 }, B: { txt: "牧羊徒步", next: 4 } },
+            6: { name: "6. 歌珊地", text: "喺歌珊地安頓咗好耐，係時候遙望返亞伯拉罕當年獲應許嘅土地，你哋點樣走？", A: { txt: "行水路", next: 1 }, B: { txt: "行陸路", next: 7 } },
+            7: { name: "7. 應許之地", text: "到達啦！上帝對亞伯拉罕同佢後裔嘅應許終於成就啦！🎉", end: true }
+        }
+    },
+    p4: {
+        name: "福音書耶穌靴履之旅",
+        nodes: {
+            1: { name: "1. 迦百農", text: "耶穌喺加利利海邊開始傳道，要前往下一個村莊，你哋點樣走？", A: { txt: "魚船", next: 2 }, B: { txt: "沿岸徒步", next: 3 } },
+            2: { name: "2. 加利利海", text: "海面上突如其來有風暴，耶穌平靜風浪之後，船隻要喺邊度靠岸？", A: { txt: "順風航行", next: 3 }, B: { txt: "划槳靠岸", next: 4 } },
+            3: { name: "3. 格拉森", text: "離開低加坡里返去內陸，門徒打算用咩方式繼續行程？", A: { txt: "騎小驢", next: 1 }, B: { txt: "結伴徒步", next: 5 } },
+            4: { name: "4. 伯賽大", text: "經歷完五餅二魚神蹟，耶穌催門徒先過對岸，你哋點樣出發？", A: { txt: "清晨出發", next: 3 }, B: { txt: "行捷徑", next: 2 } },
+            5: { name: "5. 拿因城", text: "離開加利利地區，耶穌面向耶路撒冷前行，你哋揀邊條路去猶太地？", A: { txt: "經過撒瑪利亞", next: 6 }, B: { txt: "繞道約旦河谷", next: 4 } },
+            6: { name: "6. 耶路撒冷", text: "逾越節過後，喺七日嘅第一日天咁早，你哋打算去邊度？", A: { txt: "返去加利利", next: 1 }, B: { txt: "前往園子", next: 7 } },
+            7: { name: "7. 空墳墓", text: "佢唔喺呢度，已經復活咗啦！恭喜你哋完成福音書嘅旅程！🎉", end: true }
+        }
+    }
+};
+
+let currentPath = null;
+let currentNode = 1;
+let tokens = 7;
+let history = [];
+
+function startGame() {
+    const selected = document.getElementById('pathSelect').value;
+    currentPath = gameData[selected];
+    document.getElementById('setup-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    resetGame();
+}
+
+function resetGame() {
+    currentNode = 1;
+    tokens = 7;
+    history = [currentPath.nodes[1].name];
+    updateUI();
+}
+
+function updateUI() {
+    const node = currentPath.nodes[currentNode];
+    document.getElementById('token-count').innerText = tokens;
+    document.getElementById('loc-name').innerText = node.name;
+    document.getElementById('scenario-text').innerText = node.text;
+    document.getElementById('history-list').innerText = history.join(' ➔ ');
+
+    const actionBox = document.getElementById('action-buttons');
+    if (node.end) {
+        actionBox.innerHTML = `<button class="btn-a" style="width:100%" onclick="startGame()">再玩一次 / 換路線</button>`;
+    } else {
+        actionBox.innerHTML = `
+            <button class="btn-a" onclick="makeChoice('A')">[A] ${node.A.txt}</button>
+            <button class="btn-b" onclick="makeChoice('B')">[B] ${node.B.txt}</button>
+        `;
+    }
+}
+
+function makeChoice(choice) {
+    if (tokens <= 0) return;
+
+    const node = currentPath.nodes[currentNode];
+    const nextNodeId = node[choice].next;
+    
+    tokens--;
+    currentNode = nextNodeId;
+    history.push(currentPath.nodes[currentNode].name);
+
+    if (currentPath.nodes[currentNode].end) {
+        updateUI();
+        alert("恭喜！成功抵達終點！");
+    } else if (tokens === 0) {
+        updateUI();
+        alert("Token 用盡，喺曠野迷路！即將重頭開始。");
+        resetGame();
+    } else {
+        updateUI();
+    }
+}
+</script>
+
+</body>
+</html>
