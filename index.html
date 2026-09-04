@@ -1,9 +1,11 @@
+```html
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>聖經尋寶大冒險 - 中立戰略版</title>
+    <title>聖經尋寶大冒險</title>
+
     <style>
         :root {
             --primary: #2c3e50;
@@ -11,14 +13,17 @@
             --bg: #f8f9fa;
             --card-bg: #ffffff;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg);
             margin: 0;
             padding: 15px;
             display: flex;
             justify-content: center;
         }
+
         .game-container {
             width: 100%;
             max-width: 480px;
@@ -28,171 +33,819 @@
             padding: 20px;
             box-sizing: border-box;
         }
-        h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
-        .select-group { margin-bottom: 15px; }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+        }
+
+        .select-group {
+            margin-bottom: 15px;
+        }
+
         select {
-            width: 100%; padding: 12px; font-size: 16px;
-            border-radius: 8px; border: 1px solid #ccc; background: #fff;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background: #fff;
+            box-sizing: border-box;
         }
+
         .status-bar {
-            display: flex; justify-content: space-between; align-items: center;
-            background: #eef2f5; padding: 10px 15px; border-radius: 8px; margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #eef2f5;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            gap: 10px;
         }
-        .tokens { font-size: 18px; font-weight: bold; color: #e74c3c; }
+
+        .status-info {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .tokens {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .moves {
+            font-size: 12px;
+            color: #666;
+        }
+
         .card {
-            border: 2px solid var(--primary); border-radius: 12px; padding: 15px;
-            text-align: center; background: #fff; margin-bottom: 15px;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            background: #fff;
+            margin-bottom: 15px;
         }
-        .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
-        .scenario { font-size: 15px; color: #555; line-height: 1.5; margin-bottom: 15px; text-align: left; }
-        .btn-group { display: flex; gap: 10px; flex-direction: column; }
+
+        .loc-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .scenario {
+            font-size: 15px;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-direction: column;
+        }
+
         button {
-            padding: 14px; font-size: 15px; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
         }
-        .btn-opt { background-color: #3498db; color: white; }
-        .btn-opt:nth-child(even) { background-color: #e67e22; }
-        .btn-sec { padding: 6px 10px; font-size: 12px; background: #95a5a6; color: #fff; border-radius: 6px; }
-        button:active { transform: scale(0.98); opacity: 0.9; }
-        .nav-buttons { display: flex; gap: 6px; }
-        .hidden { display: none; }
+
+        .btn-opt {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-sec {
+            padding: 6px 10px;
+            font-size: 12px;
+            background: #95a5a6;
+            color: #fff;
+            border-radius: 6px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .route-hint {
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+            margin-top: 8px;
+        }
     </style>
 </head>
+
 <body>
 
 <div class="game-container">
+
     <h1>⛪ 聖經尋寶大冒險</h1>
 
-    <!-- 路線選擇器 -->
+    <!-- 路線選擇 -->
     <div class="select-group" id="setup-screen">
-        <label for="pathSelect"><b>請選擇遊戲路線：</b></label>
+
+        <label for="pathSelect">
+            <b>請選擇遊戲路線：</b>
+        </label>
+
         <select id="pathSelect">
-            <option value="p0">0. 新手教學試玩路線 (Tutorial)</option>
-            <option value="p1">1. 出埃及記曠野路程 (中立戰略版)</option>
+
+            <option value="p0">
+                0. 新手教學試玩路線
+            </option>
+
+            <option value="p1">
+                1. 出埃及記曠野路程
+            </option>
+
         </select>
-        <button class="btn-opt" style="width: 100%; margin-top: 15px;" onclick="startGame()">開始遊戲</button>
+
+        <button
+            class="btn-opt"
+            style="width: 100%; margin-top: 15px;"
+            onclick="startGame()">
+            開始遊戲
+        </button>
+
     </div>
+
 
     <!-- 遊戲主介面 -->
     <div id="game-screen" class="hidden">
+
         <div class="status-bar">
-            <div>剩餘 Token：<span class="tokens" id="token-count">7</span> 🪙</div>
+
+            <div class="status-info">
+                <div>
+                    剩餘 Token：
+                    <span class="tokens" id="token-count">7</span>
+                    🪙
+                </div>
+
+                <div class="moves">
+                    已走：<span id="move-count">0</span> 步
+                </div>
+            </div>
+
             <div class="nav-buttons">
-                <button class="btn-sec" onclick="resetGame()">重來</button>
-                <button class="btn-sec" style="background:#7f8c8d;" onclick="backToMenu()">換路線</button>
+
+                <button
+                    class="btn-sec"
+                    onclick="resetGame()">
+                    重來
+                </button>
+
+                <button
+                    class="btn-sec"
+                    style="background:#7f8c8d;"
+                    onclick="backToMenu()">
+                    換路線
+                </button>
+
             </div>
         </div>
+
 
         <div class="card">
-            <div class="loc-title" id="loc-name">起點</div>
-            <div class="scenario" id="scenario-text">情境載入中...</div>
-            <div class="btn-group" id="action-buttons">
-                <!-- 動態生成的按鈕 -->
+
+            <div class="loc-title" id="loc-name">
+                起點
             </div>
+
+            <div class="scenario" id="scenario-text">
+                情境載入中...
+            </div>
+
+            <div
+                class="btn-group"
+                id="action-buttons">
+            </div>
+
         </div>
+
     </div>
+
 </div>
 
+
 <script>
+
 const gameData = {
+
+    /* =====================================================
+       P0：新手教學
+       ===================================================== */
+
     p0: {
+
         name: "新手教學試玩路線",
+
         startToken: 3,
+
         nodes: {
-            1: { name: "伊甸園", text: "【教學】歡迎來到體驗關卡！每次選擇會消耗 1 粒 Token。請選擇前進方向：", A: { txt: "向東邊河流方向探索", next: 3 }, B: { txt: "向西邊樹林深處探索", next: 2 } },
-            2: { name: "迷霧森林", text: "【教學】你走錯路了！這裏會浪費你的 Token，試下退回起點重來。", A: { txt: "返回伊甸園入口", next: 1 }, B: { txt: "繼續在森林原地繞圈", next: 2 } },
-            3: { name: "應許之地", text: "【教學】恭喜！你成功抵達終點，體驗完成！", end: true }
+
+            1: {
+                name: "伊甸園",
+                text:
+                    "【教學】歡迎來到體驗關卡！每次選擇會消耗 1 粒 Token。請選擇前進方向：",
+
+                A: {
+                    txt: "向東邊河流方向探索",
+                    next: 3
+                },
+
+                B: {
+                    txt: "向西邊樹林深處探索",
+                    next: 2
+                }
+            },
+
+            2: {
+                name: "迷霧森林",
+                text:
+                    "【教學】你走進了較難行的路線。每次選擇都會消耗 Token。",
+
+                A: {
+                    txt: "返回伊甸園入口",
+                    next: 1
+                },
+
+                B: {
+                    txt: "繼續在森林中探索",
+                    next: 2
+                }
+            },
+
+            3: {
+                name: "應許之地",
+                text:
+                    "【教學】恭喜！你成功抵達終點，體驗完成！",
+
+                end: true
+            }
         }
     },
+
+
+    /* =====================================================
+       P1：出埃及記
+       
+       最短路線：
+       1 → 3 → 5 → 8 → 9
+       B → B → A → B
+
+       重要：
+       - 正確選擇不是靠「A/B」記憶
+       - A/B 每次會隨機調轉顯示
+       - 玩家需要根據故事作判斷
+       ===================================================== */
+
     p1: {
+
         name: "出埃及記曠野路程",
+
         startToken: 7,
+
         nodes: {
-            1: { name: "蘭塞", text: "夜晚開拔離開奴役之地，面前出現兩條前進路線，隊伍決定採取何種策略？", A: { txt: "沿北方海岸的非利士人道路前進", next: 2 }, B: { txt: "轉向東南方的曠野紅海路前進", next: 3 } },
-            2: { name: "比哈希錄", text: "隊伍抵達海邊狹角，後方探報發現埃及戰車隊追至，應如何處置？", A: { txt: "駐紮海邊，全軍就地整頓", next: 3 }, B: { txt: "沿峭壁旁狹窄沙洲向南急行軍", next: 4 } },
-            3: { name: "瑪拉", text: "抵達水泉發現水質苦澀無法飲用，隊伍士氣受挫，後勤如何應對？", A: { txt: "派後勤隊折返尋找舊水源", next: 1 }, B: { txt: "將當地的樹木扔進水泉淨化", next: 5 } },
-            4: { name: "訊曠野", text: "走入地貌複雜的岩石荒野，糧食儲備大幅下降，隊伍如何選擇路徑？", A: { txt: "攀越地勢崎嶇的石灰岩山谷", next: 6 }, B: { txt: "順著乾涸河床退回水泉區域", next: 2 } },
-            5: { name: "利非訂", text: "遭遇亞瑪力人突襲，敵軍切斷了隊伍的補給線，指揮官如何下達指令？", A: { txt: "部署先鋒隊交戰，並在山頂建立指揮哨", next: 8 }, B: { txt: "派出斥候向南方沙漠平原尋求繞道", next: 4 } },
-            6: { name: "基博羅哈他瓦", text: "陣營捕獲大批季候風吹來的野生鵪鶉，全軍面臨衛生與分配問題，應如何處置？", A: { txt: "允許各家族即時自行儲糧與烹煮", next: 7 }, B: { txt: "設立中央分配點，清點人數後開拔", next: 4 } },
-            7: { name: "哈洗錄", text: "內部意見分歧，高空出現強烈沙塵暴導致視野極低，全軍應如何決定？", A: { txt: "宣布全軍在營外原地駐紮等待沙暴過去", next: 4 }, B: { txt: "嘗試以隊形強行穿過山林區域", next: 6 } },
-            8: { name: "加低斯巴尼亞", text: "探子帶回地理回報，北方原住民城牆高大且防守嚴密，軍事會議如何決策？", A: { txt: "鑑於兵力差距，建議主力回撤南方曠野", next: 1 }, B: { txt: "保持陣型，即時集結部隊越過山地邊界", next: 9 } },
-            9: { name: "迦南應許之地", text: "恭喜！隊伍成功進入目的地！🎉", end: true }
+
+            /* -------------------------------------------------
+               1：蘭塞
+               
+               聖經考點：
+               出埃及記 13:17-18
+               
+               神沒有帶以色列人走非利士人的路，
+               因為怕他們遇見爭戰就後悔返回埃及。
+               ------------------------------------------------- */
+
+            1: {
+
+                name: "蘭塞",
+
+                text:
+                    "以色列人剛剛離開埃及。前面有不同方向可以走。神並沒有帶他們走最近的非利士人之路，而是領他們繞道曠野。你會怎樣走？",
+
+                A: {
+                    txt:
+                        "選擇較近的非利士人道路，盡快離開埃及",
+                    next: 2
+                },
+
+                B: {
+                    txt:
+                        "跟隨神所帶領的方向，轉向曠野和紅海一帶",
+                    next: 3
+                }
+            },
+
+
+            /* -------------------------------------------------
+               2：比哈希錄
+               
+               聖經考點：
+               出埃及記 14
+               
+               法老追兵逼近，以色列人被困在海邊。
+               ------------------------------------------------- */
+
+            2: {
+
+                name: "比哈希錄",
+
+                text:
+                    "前面是海，後面卻傳來埃及法老的軍隊正在追趕。百姓十分害怕。這時候，你會怎樣做？",
+
+                A: {
+                    txt:
+                        "停下來，按神的吩咐站住，看神怎樣拯救我們",
+                    next: 3
+                },
+
+                B: {
+                    txt:
+                        "趁埃及軍隊未到，沿著海邊急走，自己找路逃走",
+                    next: 4
+                }
+            },
+
+
+            /* -------------------------------------------------
+               3：瑪拉
+               
+               聖經考點：
+               出埃及記 15:22-25
+               
+               百姓不能喝水；
+               摩西呼求耶和華；
+               神指示他把一棵樹丟在水中。
+               ------------------------------------------------- */
+
+            3: {
+
+                name: "瑪拉",
+
+                text:
+                    "走了三天沒有找到水，終於找到水泉，卻發現水是苦的，不能喝。百姓開始向摩西發怨言。現在應該怎樣做？",
+
+                A: {
+                    txt:
+                        "派人離開營地，自己去尋找另一個水源",
+                    next: 1
+                },
+
+                B: {
+                    txt:
+                        "摩西向耶和華呼求，照神所指示的方法處理水源",
+                    next: 5
+                }
+            },
+
+
+            /* -------------------------------------------------
+               4：汛曠野
+               
+               聖經考點：
+               出埃及記 16
+               
+               百姓因食物發怨言。
+               神賜嗎哪。
+               
+               這裡仍然是「故事判斷」，不是軍事常識。
+               ------------------------------------------------- */
+
+            4: {
+
+                name: "汛曠野",
+
+                text:
+                    "走進曠野後，食物開始不足。百姓想起在埃及吃肉的日子，甚至埋怨摩西和亞倫。你認為神會怎樣供應他們？",
+
+                A: {
+                    txt:
+                        "回頭向埃及人求食物，因為埃及比較容易找到食物",
+                    next: 6
+                },
+
+                B: {
+                    txt:
+                        "繼續向前，等候神每天所賜的食物",
+                    next: 2
+                }
+            },
+
+
+            /* -------------------------------------------------
+               5：利非訂
+               
+               聖經考點：
+               出埃及記 17:8-13
+               
+               亞瑪力人攻擊。
+               約書亞帶兵爭戰。
+               摩西、亞倫、戶珥上山。
+               摩西舉手時以色列得勝。
+               ------------------------------------------------- */
+
+            5: {
+
+                name: "利非訂",
+
+                text:
+                    "亞瑪力人突然來攻擊以色列人。摩西吩咐約書亞帶人出去爭戰，而自己與亞倫、戶珥上山。你會怎樣配合？",
+
+                A: {
+                    txt:
+                        "由約書亞帶領軍隊迎戰，同時支持山上的摩西",
+                    next: 8
+                },
+
+                B: {
+                    txt:
+                        "避開亞瑪力人，帶著所有百姓向另一方向逃走",
+                    next: 4
+                }
+            },
+
+
+            /* -------------------------------------------------
+               6：基博羅哈他瓦
+               
+               聖經考點：
+               民數記 11
+               
+               百姓想吃肉；
+               神賜鵪鶉；
+               後來因貪慾受到管教。
+               
+               避免加入過多「衛生管理」現代概念。
+               ------------------------------------------------- */
+
+            6: {
+
+                name: "基博羅哈他瓦",
+
+                text:
+                    "百姓一直想吃肉，埋怨只有嗎哪。後來神使鵪鶉飛到營中。大家非常興奮。這時候，最重要的提醒是甚麼？",
+
+                A: {
+                    txt:
+                        "只管大量收集，想吃多少就收集多少",
+                    next: 7
+                },
+
+                B: {
+                    txt:
+                        "記得神的供應，也不要讓自己的貪慾取代對神的信靠",
+                    next: 4
+                }
+            },
+
+
+            /* -------------------------------------------------
+               7：哈洗錄
+               
+               聖經考點：
+               民數記 12
+               
+               米利暗、亞倫批評摩西；
+               米利暗患大痲瘋。
+               
+               這裡加入另一個很明顯的 Bible-story choice。
+               ------------------------------------------------- */
+
+            7: {
+
+                name: "哈洗錄",
+
+                text:
+                    "在哈洗錄，米利暗和亞倫因為一些事情批評摩西。營中開始出現不和。面對這種情況，你會怎樣做？",
+
+                A: {
+                    txt:
+                        "加入批評摩西的人，因為大家都有權發表自己的意見",
+                    next: 4
+                },
+
+                B: {
+                    txt:
+                        "記得摩西是神所揀選的領袖，不隨便以人的方法攻擊神的僕人",
+                    next: 6
+                }
+            },
+
+
+            /* -------------------------------------------------
+               8：加低斯巴尼亞
+               
+               聖經考點：
+               民數記 13-14
+               
+               十二探子窺探迦南；
+               約書亞、迦勒相信神；
+               百姓因害怕而想回埃及。
+               
+               這是最重要的終點前 Bible knowledge test。
+               ------------------------------------------------- */
+
+            8: {
+
+                name: "加低斯巴尼亞",
+
+                text:
+                    "十二個探子從迦南回來。大部分探子說那地雖然美好，卻有強大的居民；約書亞和迦勒卻相信神必能帶領他們進去。現在全營正在作最後決定。",
+
+                A: {
+                    txt:
+                        "因為敵人強大，最好回埃及，至少比較安全",
+                    next: 1
+                },
+
+                B: {
+                    txt:
+                        "相信神的應許，勇敢向迦南地前進",
+                    next: 9
+                }
+            },
+
+
+            /* -------------------------------------------------
+               9：終點
+               ------------------------------------------------- */
+
+            9: {
+
+                name: "迦南應許之地",
+
+                text:
+                    "恭喜！你成功走到應許之地！🎉",
+
+                end: true
+            }
+
         }
     }
 };
 
+
+/* =========================================================
+   Game State
+   ========================================================= */
+
 let currentPath = null;
 let currentNode = 1;
 let tokens = 7;
+let moves = 0;
+
+
+/* =========================================================
+   Start
+   ========================================================= */
 
 function startGame() {
-    const selected = document.getElementById('pathSelect').value;
+
+    const selected =
+        document.getElementById('pathSelect').value;
+
     currentPath = gameData[selected];
-    document.getElementById('setup-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
+
+    document
+        .getElementById('setup-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('game-screen')
+        .classList.remove('hidden');
+
     resetGame();
 }
 
+
+/* =========================================================
+   Reset
+   ========================================================= */
+
 function resetGame() {
+
+    if (!currentPath) return;
+
     currentNode = 1;
     tokens = currentPath.startToken || 7;
+    moves = 0;
+
     updateUI();
 }
 
+
+/* =========================================================
+   Back to menu
+   ========================================================= */
+
 function backToMenu() {
-    document.getElementById('game-screen').classList.add('hidden');
-    document.getElementById('setup-screen').classList.remove('hidden');
+
+    document
+        .getElementById('game-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('setup-screen')
+        .classList.remove('hidden');
 }
+
+
+/* =========================================================
+   Update UI
+   ========================================================= */
 
 function updateUI() {
-    const node = currentPath.nodes[currentNode];
-    document.getElementById('token-count').innerText = tokens;
-    document.getElementById('loc-name').innerText = node.name;
-    document.getElementById('scenario-text').innerText = node.text;
 
-    const actionBox = document.getElementById('action-buttons');
+    const node =
+        currentPath.nodes[currentNode];
+
+    document.getElementById('token-count').innerText =
+        tokens;
+
+    document.getElementById('move-count').innerText =
+        moves;
+
+    document.getElementById('loc-name').innerText =
+        node.name;
+
+    document.getElementById('scenario-text').innerText =
+        node.text;
+
+
+    const actionBox =
+        document.getElementById('action-buttons');
+
+
+    /* ---------- End Node ---------- */
+
     if (node.end) {
+
         actionBox.innerHTML = `
-            <button class="btn-opt" style="width:100%" onclick="resetGame()">重新挑戰本路線</button>
-            <button class="btn-opt" style="width:100%; background:#7f8c8d;" onclick="backToMenu()">返回路線選單</button>
+
+            <button
+                class="btn-opt"
+                style="width:100%;"
+                onclick="resetGame()">
+                重新挑戰本路線
+            </button>
+
+            <button
+                class="btn-sec"
+                style="width:100%; padding:14px; font-size:15px;"
+                onclick="backToMenu()">
+                返回路線選單
+            </button>
+
         `;
-    } else {
-        const choices = [
-            { key: 'A', txt: node.A.txt },
-            { key: 'B', txt: node.B.txt }
-        ];
-        if (Math.random() < 0.5) {
-            choices.reverse();
+
+        return;
+    }
+
+
+    /* ---------- Normal Node ---------- */
+
+    let choices = [
+
+        {
+            key: 'A',
+            txt: node.A.txt
+        },
+
+        {
+            key: 'B',
+            txt: node.B.txt
         }
 
-        actionBox.innerHTML = `
-            <button class="btn-opt" onclick="makeChoice('${choices[0].key}')">${choices[0].txt}</button>
-            <button class="btn-opt" onclick="makeChoice('${choices[1].key}')">${choices[1].txt}</button>
-        `;
+    ];
+
+
+    /*
+     * 每次隨機調轉 A / B 顯示位置。
+     *
+     * 玩家不能靠記「B 永遠是好答案」。
+     * 必須根據故事內容判斷。
+     */
+
+    if (Math.random() < 0.5) {
+        choices.reverse();
     }
+
+
+    actionBox.innerHTML = `
+
+        <button
+            class="btn-opt"
+            onclick="makeChoice('${choices[0].key}')">
+            ${choices[0].txt}
+        </button>
+
+        <button
+            class="btn-opt"
+            onclick="makeChoice('${choices[1].key}')">
+            ${choices[1].txt}
+        </button>
+
+    `;
 }
+
+
+/* =========================================================
+   Make Choice
+   ========================================================= */
 
 function makeChoice(choiceKey) {
-    if (tokens <= 0) return;
 
-    const node = currentPath.nodes[currentNode];
-    const nextNodeId = node[choiceKey].next;
-    
+    if (tokens <= 0) {
+        return;
+    }
+
+
+    const node =
+        currentPath.nodes[currentNode];
+
+    const choice =
+        node[choiceKey];
+
+    if (!choice) {
+        return;
+    }
+
+
+    /* 消耗 Token */
+
     tokens--;
-    currentNode = nextNodeId;
+
+    moves++;
+
+    currentNode =
+        choice.next;
+
+
+    /* ---------- Success ---------- */
 
     if (currentPath.nodes[currentNode].end) {
+
         updateUI();
-        alert("🎉 恭喜！成功抵達終點！");
-    } else if (tokens === 0) {
-        updateUI();
-        alert("🪙 Token 用盡，喺旅途中迷路！即將重頭開始本路線。");
-        resetGame();
-    } else {
-        updateUI();
+
+        alert(
+            "🎉 恭喜！成功抵達終點！\n\n" +
+            "你用了 " + moves + " 步。"
+        );
+
+        return;
     }
+
+
+    /* ---------- Token 用盡 ---------- */
+
+    if (tokens === 0) {
+
+        updateUI();
+
+        alert(
+            "🪙 Token 用盡！\n\n" +
+            "你喺曠野中迷路了，重新挑戰吧。"
+        );
+
+        resetGame();
+
+        return;
+    }
+
+
+    /* ---------- Continue ---------- */
+
+    updateUI();
 }
+
 </script>
 
 </body>
 </html>
+```
