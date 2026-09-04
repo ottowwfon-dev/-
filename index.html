@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教會尋寶大冒險 - FSA Game</title>
+    <title>聖經尋寶大冒險 - 隨機位置版</title>
     <style>
         :root {
             --primary: #2c3e50;
@@ -43,112 +43,123 @@
             border: 2px solid var(--primary); border-radius: 12px; padding: 15px;
             text-align: center; background: #fff; margin-bottom: 15px;
         }
-        .loc-title { font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
-        .scenario { font-size: 16px; color: #555; line-height: 1.5; margin-bottom: 15px; }
+        .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
+        .scenario { font-size: 15px; color: #555; line-height: 1.5; margin-bottom: 15px; text-align: left; }
         .btn-group { display: flex; gap: 10px; flex-direction: column; }
         button {
-            padding: 14px; font-size: 16px; font-weight: bold;
+            padding: 14px; font-size: 15px; font-weight: bold;
             border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
         }
-        .btn-a { background-color: #3498db; color: white; }
-        .btn-b { background-color: #e67e22; color: white; }
-        .btn-reset { background-color: #95a5a6; color: white; margin-top: 15px; width: 100%; }
+        .btn-opt { background-color: #3498db; color: white; }
+        .btn-opt:nth-child(even) { background-color: #e67e22; }
         button:active { transform: scale(0.98); opacity: 0.9; }
-        .history {
-            margin-top: 15px; padding: 10px; background: #f0f3f4;
-            border-radius: 8px; font-size: 14px; color: #666;
-        }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>⛪ 教會尋寶大冒險</h1>
+    <h1>⛪ 聖經尋寶大冒險</h1>
 
     <!-- 路線選擇器 -->
     <div class="select-group" id="setup-screen">
         <label for="pathSelect"><b>請選擇遊戲路線：</b></label>
         <select id="pathSelect">
+            <option value="p0">0. 新手教學試玩路線 (Tutorial)</option>
             <option value="p1">1. 出埃及記曠野路程</option>
             <option value="p2">2. 保羅宣教之旅</option>
             <option value="p3">3. 亞伯拉罕信心之旅</option>
             <option value="p4">4. 福音書耶穌靴履之旅</option>
         </select>
-        <button class="btn-a" style="width: 100%; margin-top: 15px;" onclick="startGame()">開始遊戲</button>
+        <button class="btn-opt" style="width: 100%; margin-top: 15px;" onclick="startGame()">開始遊戲</button>
     </div>
 
     <!-- 遊戲主介面 -->
     <div id="game-screen" class="hidden">
         <div class="status-bar">
             <div>剩餘 Token：<span class="tokens" id="token-count">7</span> 🪙</div>
-            <button style="padding: 5px 10px; font-size: 12px;" onclick="resetGame()">重來</button>
+            <button style="padding: 6px 12px; font-size: 12px; background:#95a5a6; color:#fff;" onclick="resetGame()">重新開始本路線</button>
         </div>
 
         <div class="card">
-            <div class="loc-title" id="loc-name">1. 起點</div>
+            <div class="loc-title" id="loc-name">起點</div>
             <div class="scenario" id="scenario-text">情境載入中...</div>
             <div class="btn-group" id="action-buttons">
-                <button class="btn-a" id="btn-a" onclick="makeChoice('A')">選項 A</button>
-                <button class="btn-b" id="btn-b" onclick="makeChoice('B')">選項 B</button>
+                <!-- 動態生成的按鈕 -->
             </div>
-        </div>
-
-        <div class="history">
-            <b>行走紀錄：</b>
-            <div id="history-list">1. 起點</div>
         </div>
     </div>
 </div>
 
 <script>
 const gameData = {
+    p0: {
+        name: "新手教學試玩路線",
+        startToken: 3,
+        nodes: {
+            1: { name: "伊甸園 (教學)", text: "【教學】歡迎來到體驗關卡！每次選擇會消耗 1 粒 Token。試下揀選正確道路前行！", A: { txt: "選擇順服神（正確路線）", next: 3 }, B: { txt: "選擇聽從蛇（進入陷阱）", next: 2 } },
+            2: { name: "迷霧森林 (教學)", text: "【教學】你走錯路了！這裏會浪費你的 Token，試下退回起點重來。", A: { txt: "返回伊甸園", next: 1 }, B: { txt: "繼續在森林原地打轉", next: 2 } },
+            3: { name: "應許之地 (教學終點)", text: "【教學】恭喜！你成功抵達終點，體驗完成！", end: true }
+        }
+    },
     p1: {
         name: "出埃及記曠野路程",
+        startToken: 7,
         nodes: {
-            1: { name: "1. 埃及", text: "旅程正式開始！大家準備好深夜出發，你哋想跟邊個指引向前行？", A: { txt: "雲柱", next: 2 }, B: { txt: "火柱", next: 3 } },
-            2: { name: "2. 紅海", text: "前面係海水，領袖要帶領咁多人過海，你哋會點樣行？", A: { txt: "徒步", next: 3 }, B: { txt: "騎牲口", next: 4 } },
-            3: { name: "3. 瑪拉", text: "喺沙漠休息補充物資，你哋想領取邊種食物繼續上路？", A: { txt: "瑪娜", next: 1 }, B: { txt: "鵪鶉", next: 5 } },
-            4: { name: "4. 訊曠野", text: "前面嘅路好多石頭好難行，你哋個隊伍想行邊條路？", A: { txt: "山路", next: 3 }, B: { txt: "平原", next: 2 } },
-            5: { name: "5. 利非訂", text: "太陽好猛烈！要橫過呢片大沙漠，你哋揀邊種交通工具？", A: { txt: "駱駝隊", next: 6 }, B: { txt: "馬車", next: 4 } },
-            6: { name: "6. 西奈山", text: "大家去到聖山山腳，最後一程要點樣靠上帝嘅大能衝過？", A: { txt: "擊打磐石取水", next: 1 }, B: { txt: "舉手禱告求勝", next: 7 } },
-            7: { name: "7. 迦南地", text: "恭喜！你哋成功到達流奶與蜜嘅應許之地啦！🎉", end: true }
+            1: { name: "蘭塞 (埃及)", text: "深夜出發離開奴役之地，面前有兩條路，你哋想跟邊個神奇指引向前行？", A: { txt: "日間跟隨雲柱", next: 2 }, B: { txt: "夜間跟隨火柱", next: 3 } },
+            2: { name: "比哈希錄", text: "前面係汪洋大海，後有埃及追兵！你要點樣突破重圍？", A: { txt: "舉杖向海分開海水", next: 3 }, B: { txt: "沿海岸線急行軍", next: 4 } },
+            3: { name: "瑪拉", text: "到達水泉但水係苦嘅，眾人開始怨讟！你哋揀邊種食物物資補充能量？", A: { txt: "抱怨並要回埃及", next: 1 }, B: { txt: "祈求並領取天降瑪娜", next: 5 } },
+            4: { name: "訊曠野", text: "走入茫茫荒野，物資快要用盡，隊伍打算點樣覓路？", A: { txt: "攀越崎嶇山谷", next: 6 }, B: { txt: "退回水泉營地", next: 2 } },
+            5: { name: "利非訂", text: "百姓因為無水飲同摩西爭鬧，敵軍亞瑪力人突襲！你哋點樣應對？", A: { txt: "擊打磐石並舉手禱告求勝", next: 8 }, B: { txt: "派探子往沙漠平原搜尋", next: 4 } },
+            6: { name: "基博羅哈他瓦", text: "百姓貪慾大發，哭號要肉食。強風吹來無數鵪鶉，你哋點處置？", A: { txt: "大肆吃喝不加節制", next: 7 }, B: { txt: "清點人數重回正路", next: 4 } },
+            7: { name: "哈洗錄", text: "隊內發生嫉妒同毀謗，路上大起雲霧迷失方向，你哋點樣選擇？", A: { txt: "在營外自省靜候", next: 4 }, B: { txt: "盲目向前闖入山林", next: 6 } },
+            8: { name: "加低斯巴尼亞", text: "去到應許之地邊境，派咗 12 個探子進去窺探，你哋相信邊個嘅回報？", A: { txt: "聽信 10 個探子：『敵人係巨人，我哋必死！』", next: 1 }, B: { txt: "聽信約書亞與迦勒：『上帝必賜我哋呢地！』", next: 9 } },
+            9: { name: "迦南應許之地", text: "恭喜！你哋終於跨越約旦河，成功進入流奶與蜜嘅迦南美地！🎉", end: true }
         }
     },
     p2: {
         name: "保羅宣教之旅",
+        startToken: 7,
         nodes: {
-            1: { name: "1. 安提阿", text: "安提阿教會差遣你哋出發！要踏上地中海，你哋會搭邊種船？", A: { txt: "帆船", next: 2 }, B: { txt: "槳船", next: 3 } },
-            2: { name: "2. 塞浦路斯", text: "去到塞浦路斯小島，你哋想靠邊一種風吹動船隻繼續航行？", A: { txt: "西風", next: 3 }, B: { txt: "南風", next: 4 } },
-            3: { name: "3. 特羅亞", text: "喺異象中收到呼喚要橫渡愛琴海，去到陸地之後你哋打算點樣行？", A: { txt: "步行", next: 1 }, B: { txt: "騎馬", next: 5 } },
-            4: { name: "4. 腓立比", text: "離開城市城牆，沿住海岸線，你哋想行邊條通道？", A: { txt: "沿海路", next: 3 }, B: { txt: "內陸路", next: 2 } },
-            5: { name: "5. 哥林多", text: "去到繁忙嘅哥林多港口，有兩艘商船可以搭，你哋揀邊艘？", A: { txt: "客商船", next: 6 }, B: { txt: "載貨船", next: 4 } },
-            6: { name: "6. 雅典", text: "喺雅典講完道，要向西出發去帝國首都，你哋揀邊個時間開船？", A: { txt: "日間航行", next: 1 }, B: { txt: "夜間航行", next: 7 } },
-            7: { name: "7. 羅馬", text: "恭喜！你哋終於去到羅馬，將福音傳到帝國嘅中心！🎉", end: true }
+            1: { name: "安提阿", text: "聖靈差遣保羅同巴拿巴出發！要踏上第一次宣教之旅，你哋揀邊種交通工具？", A: { txt: "搭乘沿岸貿易陸路馬車", next: 2 }, B: { txt: "前往西流基港口搭帆船", next: 3 } },
+            2: { name: "塞浦路斯", text: "喺島上遇見行法術嘅偽先知阻撓傳道，你哋點樣應對？", A: { txt: "靠聖靈能力指責邪術", next: 3 }, B: { txt: "轉乘小槳船駛往內陸", next: 4 } },
+            3: { name: "特羅亞", text: "夜間保羅喺異象中看見馬其頓人站著求幫忙，你哋決定點做？", A: { txt: "猶豫不決，返回起點思考", next: 1 }, B: { txt: "立刻開船橫渡愛琴海", next: 5 } },
+            4: { name: "別加", text: "同行的馬可突然離隊返回耶路撒冷，團隊士氣受挫，你哋點行？", A: { txt: "翻越危險的加拉太山脈", next: 6 }, B: { txt: "返回港口重整旗鼓", next: 2 } },
+            5: { name: "腓立比", text: "喺城裡因為驅鬼被關進監獄，半夜地大震動門全都開了！你哋點做？", A: { txt: "向獄卒傳福音並前往雅典", next: 8 }, B: { txt: "沿著古羅馬大道盲目西行", next: 4 } },
+            6: { name: "帖撒羅尼迦", text: "市井匪類聚眾滋事攻擊會堂，大家要趁夜間離城，你哋走邊條路？", A: { txt: "躲入庇哩亞城避難", next: 7 }, B: { txt: "折返別加尋找同工", next: 4 } },
+            7: { name: "庇哩亞", text: "呢度嘅人天天考查聖經，但帖撒羅尼迦嘅猶太人又追來騷擾，點辦？", A: { txt: "由弟兄護送往海岸線", next: 4 }, B: { txt: "留在當地與騷亂者理論", next: 6 } },
+            8: { name: "哥林多", text: "喺呢個繁華港口傳道一年半，主喺異象中話『呢度有好多我嘅百姓』，最後要前往帝國首都，你哋搭邊艘船？", A: { txt: "搭乘直航埃及的運糧船", next: 1 }, B: { txt: "搭乘押解上奏皇帝的羅馬艦艇", next: 9 } },
+            9: { name: "羅馬", text: "恭喜！雖然經歷海難，但你哋終於將福音帶到帝國中心羅馬！🎉", end: true }
         }
     },
     p3: {
         name: "亞伯拉罕信心之旅",
+        startToken: 7,
         nodes: {
-            1: { name: "1. 吾珥", text: "收到呼召要離開迦勒底嘅吾珥，你哋會用咩搬運家當出發？", A: { txt: "駱駝隊", next: 2 }, B: { txt: "驢仔車", next: 3 } },
-            2: { name: "2. 哈蘭", text: "喺哈蘭住咗一段時間，係時候繼續南下，帳棚隊伍行邊條路？", A: { txt: "山谷路", next: 3 }, B: { txt: "丘陵路", next: 4 } },
-            3: { name: "3. 示劍", text: "喺大樹下築壇，點知遇到饑荒，你哋隊伍要點樣移動去搵食物？", A: { txt: "急行軍", next: 1 }, B: { txt: "慢行放牧", next: 5 } },
-            4: { name: "4. 伯特利", text: "喺伯特利同艾城中間支搭帳棚，牛群羊群要向邊個方向放牧？", A: { txt: "向北行", next: 3 }, B: { txt: "向南行", next: 2 } },
-            5: { name: "5. 埃及(約瑟)", text: "過了幾代之後，法老邀請雅各全家搬去肥沃嘅土地住，你哋點樣過去？", A: { txt: "法老馬車", next: 6 }, B: { txt: "牧羊徒步", next: 4 } },
-            6: { name: "6. 歌珊地", text: "喺歌珊地安頓咗好耐，係時候遙望返亞伯拉罕當年獲應許嘅土地，你哋點樣走？", A: { txt: "行水路", next: 1 }, B: { txt: "行陸路", next: 7 } },
-            7: { name: "7. 應許之地", text: "到達啦！上帝對亞伯拉罕同佢後裔嘅應許終於成就啦！🎉", end: true }
+            1: { name: "吾珥", text: "榮耀嘅上帝向亞伯拉罕顯現，叫佢離開本地本族，你哋用咩搬運家當？", A: { txt: "組建龐大的商會牛車隊", next: 2 }, B: { txt: "帶領家族駱駝隊憑信心出發", next: 3 } },
+            2: { name: "哈蘭", text: "父親他拉喺呢度去世，停滯了一段時間，現在要重新出發，走邊條路？", A: { txt: "沿幼發拉底河向南行進", next: 3 }, B: { txt: "穿過敘利亞沙漠捷徑", next: 4 } },
+            3: { name: "示劍", text: "到達迦南地，喺摩利大樹下築壇獻祭，突然遇到大饑荒！你哋點做？", A: { txt: "懷疑應許，折返回老家", next: 1 }, B: { txt: "遷往伯特利東邊山區", next: 5 } },
+            4: { name: "艾城外圍", text: "牛羊實在太多，亞伯拉罕同羅得嘅牧人發生爭吵，你哋點解決？", A: { txt: "往約旦河全平原肥沃地走", next: 6 }, B: { txt: "退回哈蘭舊牧場", next: 2 } },
+            5: { name: "希伯崙 (幔利橡樹)", text: "上帝與亞伯拉罕立約，應許賜下兒子。後來四王五王大戰，羅得被俘！你哋點辦？", A: { txt: "率領家丁 318 人夜襲救人", next: 8 }, B: { txt: "派人往南邊尋找幫助", next: 4 } },
+            6: { name: "所多瑪郊野", text: "城內罪惡深重，上帝要毀滅此城，亞伯拉罕為城禱告，你哋點樣逃命？", A: { txt: "聽從天使話：『往山上跑，不可回頭看！』", next: 7 }, B: { txt: "順著平原大道逃往艾城", next: 4 } },
+            7: { name: "瑣珥小鎮", text: "羅得嘅妻子因為回頭看變成鹽柱，隊伍陷入恐慌迷惘，你哋點走？", A: { txt: "逃往山洞居住", next: 4 }, B: { txt: "返回所多瑪廢墟搜尋", next: 6 } },
+            8: { name: "摩利亞山", text: "上帝給予終極信心考驗：『將你獨生的兒子以撒獻為燔祭！』你哋點選擇？", A: { txt: "拒絕順服，放棄信心帶兒子逃回吾珥", next: 1 }, B: { txt: "清早起來帶以撒上山，相信上帝必有預備", next: 9 } },
+            9: { name: "應許成就 (賜福之源)", text: "恭喜！上帝預備了公羊代替，亞伯拉罕成為信心之父，應許萬國因他得福！🎉", end: true }
         }
     },
     p4: {
         name: "福音書耶穌靴履之旅",
+        startToken: 7,
         nodes: {
-            1: { name: "1. 迦百農", text: "耶穌喺加利利海邊開始傳道，要前往下一個村莊，你哋點樣走？", A: { txt: "魚船", next: 2 }, B: { txt: "沿岸徒步", next: 3 } },
-            2: { name: "2. 加利利海", text: "海面上突如其來有風暴，耶穌平靜風浪之後，船隻要喺邊度靠岸？", A: { txt: "順風航行", next: 3 }, B: { txt: "划槳靠岸", next: 4 } },
-            3: { name: "3. 格拉森", text: "離開低加坡里返去內陸，門徒打算用咩方式繼續行程？", A: { txt: "騎小驢", next: 1 }, B: { txt: "結伴徒步", next: 5 } },
-            4: { name: "4. 伯賽大", text: "經歷完五餅二魚神蹟，耶穌催門徒先過對岸，你哋點樣出發？", A: { txt: "清晨出發", next: 3 }, B: { txt: "行捷徑", next: 2 } },
-            5: { name: "5. 拿因城", text: "離開加利利地區，耶穌面向耶路撒冷前行，你哋揀邊條路去猶太地？", A: { txt: "經過撒瑪利亞", next: 6 }, B: { txt: "繞道約旦河谷", next: 4 } },
-            6: { name: "6. 耶路撒冷", text: "逾越節過後，喺七日嘅第一日天咁早，你哋打算去邊度？", A: { txt: "返去加利利", next: 1 }, B: { txt: "前往園子", next: 7 } },
-            7: { name: "7. 空墳墓", text: "佢唔喺呢度，已經復活咗啦！恭喜你哋完成福音書嘅旅程！🎉", end: true }
+            1: { name: "拿撒勒 / 加利利", text: "耶穌喺會堂宣讀先知書，開始傳道。要召門徒作得人漁夫，你哋點樣跟隨？", A: { txt: "沿著陸路官道宣講福音", next: 2 }, B: { txt: "前往加利利海邊尋找漁夫", next: 3 } },
+            2: { name: "迦百農", text: "喺會堂醫治癱子同趕鬼，名聲傳遍四方，眾人擁擠，你哋點樣前行？", A: { txt: "乘船渡到海對岸", next: 3 }, B: { txt: "走野地前往猶太山區", next: 4 } },
+            3: { name: "伯賽大", text: "黃昏時分有五千人聚集，門徒只有五餅二魚，耶穌點樣行神蹟？", A: { txt: "叫大家散去自己買食物", next: 1 }, B: { txt: "祝謝分給眾人，並催門徒上船", next: 5 } },
+            4: { name: "格拉森", text: "海面上遇著暴風，耶穌斥責風浪。靠岸後遇到被鬼附者，你哋點做？", A: { txt: "讓鬼入豬群，隨後往低加坡里", next: 6 }, B: { txt: "驚慌退回迦百農港口", next: 2 } },
+            5: { name: "凱撒利亞腓立比", text: "耶穌問門徒：『你哋話我是誰？』彼得回答：『祢是基督！』耶穌隨即面向耶路撒冷，你哋揀邊條路？", A: { txt: "經撒瑪利亞前往猶太地", next: 8 }, B: { txt: "繞道外邦人地區避難", next: 4 } },
+            6: { name: "耶利哥", text: "路過遇見稅吏長撒該爬上桑樹，同埋瞎子巴底買呼求，你哋點樣回應？", A: { txt: "進撒該家住宿，並醫治瞎子", next: 7 }, B: { txt: "快速通過返回伯賽大", next: 4 } },
+            7: { name: "伯法其", text: "臨近耶路撒冷，耶穌派兩個門徒去村裡，你哋要牽咩過來？", A: { txt: "牽一隻從未騎過的驢駒過來", next: 4 }, B: { txt: "借一匹羅馬戰馬過來", next: 6 } },
+            8: { name: "客西馬尼園", text: "最後晚餐後，耶穌喺園裡極度傷痛禱告：『不要照我的意思，只要照祢的意思。』隨後猶大帶兵丁前來，你哋點做？", A: { txt: "四散逃跑，彼得三次不認主並逃回加利利", next: 1 }, B: { txt: "默然跟隨，緊扣十字架與復活的應許", next: 9 } },
+            9: { name: "空墳墓 (主已復活)", text: "『佢唔喺呢度，已經復活咗啦！』恭喜你哋親眼見證救恩的成就！🎉", end: true }
         }
     }
 };
@@ -156,7 +167,6 @@ const gameData = {
 let currentPath = null;
 let currentNode = 1;
 let tokens = 7;
-let history = [];
 
 function startGame() {
     const selected = document.getElementById('pathSelect').value;
@@ -168,8 +178,7 @@ function startGame() {
 
 function resetGame() {
     currentNode = 1;
-    tokens = 7;
-    history = [currentPath.nodes[1].name];
+    tokens = currentPath.startToken || 7;
     updateUI();
 }
 
@@ -178,35 +187,43 @@ function updateUI() {
     document.getElementById('token-count').innerText = tokens;
     document.getElementById('loc-name').innerText = node.name;
     document.getElementById('scenario-text').innerText = node.text;
-    document.getElementById('history-list').innerText = history.join(' ➔ ');
 
     const actionBox = document.getElementById('action-buttons');
     if (node.end) {
-        actionBox.innerHTML = `<button class="btn-a" style="width:100%" onclick="startGame()">再玩一次 / 換路線</button>`;
+        actionBox.innerHTML = `<button class="btn-opt" style="width:100%" onclick="resetGame()">重新挑戰本路線</button>`;
     } else {
+        // 洗牌選項（Randomize Choice Order）
+        const choices = [
+            { key: 'A', txt: node.A.txt },
+            { key: 'B', txt: node.B.txt }
+        ];
+        // 50% 幾率對調上下按鈕位置
+        if (Math.random() < 0.5) {
+            choices.reverse();
+        }
+
         actionBox.innerHTML = `
-            <button class="btn-a" onclick="makeChoice('A')">[A] ${node.A.txt}</button>
-            <button class="btn-b" onclick="makeChoice('B')">[B] ${node.B.txt}</button>
+            <button class="btn-opt" onclick="makeChoice('${choices[0].key}')">${choices[0].txt}</button>
+            <button class="btn-opt" onclick="makeChoice('${choices[1].key}')">${choices[1].txt}</button>
         `;
     }
 }
 
-function makeChoice(choice) {
+function makeChoice(choiceKey) {
     if (tokens <= 0) return;
 
     const node = currentPath.nodes[currentNode];
-    const nextNodeId = node[choice].next;
+    const nextNodeId = node[choiceKey].next;
     
     tokens--;
     currentNode = nextNodeId;
-    history.push(currentPath.nodes[currentNode].name);
 
     if (currentPath.nodes[currentNode].end) {
         updateUI();
-        alert("恭喜！成功抵達終點！");
+        alert("🎉 恭喜！成功抵達終點！");
     } else if (tokens === 0) {
         updateUI();
-        alert("Token 用盡，喺曠野迷路！即將重頭開始。");
+        alert("🪙 Token 用盡，喺旅途中迷路！即將重頭開始本路線。");
         resetGame();
     } else {
         updateUI();
