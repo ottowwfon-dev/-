@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>聖經尋寶大冒險 - 出埃及記</title>
-    <!-- Firebase SDKs (可自由保留或移除) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
@@ -203,15 +203,15 @@
 </div>
 
 <script>
-// Firebase 配置（若不使用全場連線，此部分亦不影響本地運行）
+// 已直接幫你填入正確的 Firebase 配置
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT.firebaseapp.com",
-    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-    projectId: "YOUR_PROJECT",
-    storageBucket: "YOUR_PROJECT.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDw0-piD-5yKHtyC09Z6NCEdLnOY4RR5xk",
+    authDomain: "anniversary-388ed.firebaseapp.com",
+    databaseURL: "https://anniversary-388ed-default-rtdb.firebaseio.com",
+    projectId: "anniversary-388ed",
+    storageBucket: "anniversary-388ed.firebasestorage.app",
+    messagingSenderId: "372336604360",
+    appId: "1:372336604360:web:bcce8be5e2851ef8b3e1fd"
 };
 
 let db = null;
@@ -219,7 +219,7 @@ try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
 } catch (e) {
-    console.warn("Firebase 未配置，使用 LocalStorage 本地模式。");
+    console.warn("Firebase 未配置或連線失敗，使用 LocalStorage 本地模式。");
 }
 
 // 遊戲節點資料
@@ -466,6 +466,9 @@ function listenToScoreboard() {
                 scores.push(childSnapshot.val());
             });
             renderScoreList(scores);
+        }, (error) => {
+            console.error(error);
+            document.getElementById('score-list').innerHTML = `<div style="text-align:center; color:#e74c3c; padding:8px;">未開通 Realtime Database，請參照指引設定。</div>`;
         });
     } else {
         const scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
