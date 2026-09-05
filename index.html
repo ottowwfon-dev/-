@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>聖經尋寶大冒險 - 出埃及記</title>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -67,19 +70,12 @@
             background: #fff3cd; color: #856404; padding: 12px;
             border-radius: 8px; margin-top: 15px; font-size: 13px; text-align: left;
         }
-        
-        /* YouTube Style Ad Interstitial */
-        .ad-card {
-            border: 2px solid #e74c3c;
-            background: #fffdfd;
-        }
+        .ad-card { border: 2px solid #e74c3c; background: #fffdfd; }
         .ad-tag {
             display: inline-block; background: #f1c40f; color: #000;
             font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-bottom: 8px;
         }
-        .ad-timer-countdown {
-            font-size: 14px; color: #7f8c8d; margin-top: 15px; font-weight: bold;
-        }
+        .ad-timer-countdown { font-size: 14px; color: #7f8c8d; margin-top: 15px; font-weight: bold; }
         .hidden { display: none; }
     </style>
 </head>
@@ -88,7 +84,7 @@
 <div class="game-container">
     <h1 onclick="adminResetCheck()">⛪ 聖經尋寶大冒險</h1>
 
-    <!-- 0. HOMEPAGE / INSTRUCTION SCREEN -->
+    <!-- 0. HOMEPAGE -->
     <div id="home-screen">
         <div class="card">
             <div class="loc-title">📜 遊戲玩法指引</div>
@@ -115,14 +111,12 @@
         </div>
     </div>
 
-    <!-- 2. CHURCH AD SCREEN (REPLACES MINI-GAME WITH 15S COUNTDOWN) -->
+    <!-- 2. CHURCH AD SCREEN -->
     <div id="ad-screen" class="hidden">
         <div class="card ad-card">
             <div><span class="ad-tag">贊助商廣告</span></div>
             <div class="loc-title" style="color:#c0392b;">📢 教會特別廣播</div>
-            <div class="scenario" id="ad-text" style="text-align:center; font-size:16px;">
-                ...
-            </div>
+            <div class="scenario" id="ad-text" style="text-align:center; font-size:16px;">...</div>
             <div class="ad-timer-countdown" id="ad-countdown-text">
                 倒數 <span id="ad-seconds" style="color:#e74c3c; font-size:18px;">15</span> 秒後可跳過廣告
             </div>
@@ -132,20 +126,14 @@
         </div>
     </div>
 
-    <!-- 3. MINI-GAME SCREEN (STOPWATCH) -->
+    <!-- 3. MINI-GAME SCREEN -->
     <div id="minigame-screen" class="hidden">
         <div class="card">
             <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰</div>
             <div style="font-size: 18px; font-weight: bold;">按 STOP 捕捉目標時間！</div>
-            
-            <div class="timer-box">
-                目標：<span id="target-time">2.0</span> 秒
-            </div>
-
+            <div class="timer-box">目標：<span id="target-time">2.0</span> 秒</div>
             <div id="timer-status" style="font-size: 18px; color: #e67e22; height: 30px;">按 START 開始</div>
-
             <div class="result-box hidden" id="game-result"></div>
-
             <div style="margin-top: 15px;">
                 <button id="btn-timer-start" class="btn-action" onclick="startTimer()">START</button>
                 <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">STOP</button>
@@ -165,14 +153,14 @@
             <div id="name-input-section" style="margin-top: 15px;">
                 <p style="font-size: 14px; margin-bottom: 8px;">🏆 請輸入名字登上排行榜：</p>
                 <input type="text" id="player-name" placeholder="輸入姓名 / 暱稱" maxlength="15">
-                <button class="btn-action" onclick="submitScore()">提交成績</button>
+                <button class="btn-action" id="btn-submit" onclick="submitScore()">提交成績</button>
             </div>
 
             <div id="rank-result" class="hidden" style="margin: 15px 0; font-size: 18px; font-weight: bold; color: var(--accent);"></div>
 
             <div class="scoreboard">
-                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">🏆 全場完成排行榜</div>
-                <div id="score-list"></div>
+                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">🏆 全場跨裝置排行榜 (即時連線)</div>
+                <div id="score-list">載入排行榜中...</div>
             </div>
 
             <div class="notice-box" id="screenshot-notice">
@@ -189,7 +177,27 @@
 </div>
 
 <script>
-// TOPOLOGY & DATA
+// --- FIREBASE INITIALIZATION ---
+// Replace the config below with your own Firebase Project Keys (See setup steps below)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
+};
+
+let db = null;
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.database();
+} catch (e) {
+    console.warn("Firebase not configured yet. Falling back to local display.");
+}
+
+// GAME DATA
 const nodesData = {
     1: { name: "蘭塞", text: "大隊剛剛離開蘭塞。前面地勢平坦，但遠處幾條路開始分開。天色仲早，你哋準備向前行。", A: { txt: "沿住大隊留下嘅車轍繼續向前", next: 3 }, B: { txt: "見北面有水源，轉向水邊行", next: 2 } },
     2: { name: "密奪", text: "你哋發現周圍開始見唔到大隊蹤影。遠處有煙，但方向唔太清楚。", A: { txt: "跟住遠處煙柱，向高地方向走", next: 4 }, B: { txt: "避開主路，沿石堆之間嘅小路走", next: 9 } },
@@ -218,7 +226,6 @@ let timerTarget = 2.0;
 let timerAttemptCount = 0;
 let nodeVisitedCount = 0;
 let clickHeaderCount = 0;
-
 let adTimerInterval = null;
 let adSecondsLeft = 15;
 
@@ -236,12 +243,12 @@ function goHome() {
 
 function showScoreboardFromHome() {
     document.getElementById('home-screen').classList.add('hidden');
-    document.getElementById('win-title').innerText = "🏆 當前排行榜";
+    document.getElementById('win-title').innerText = "🏆 全場排行榜";
     document.getElementById('time-display-box').classList.add('hidden');
     document.getElementById('name-input-section').classList.add('hidden');
     document.getElementById('screenshot-notice').classList.add('hidden');
     document.getElementById('win-screen').classList.remove('hidden');
-    renderScoreboard();
+    listenToScoreboard();
 }
 
 function renderLocation() {
@@ -250,16 +257,11 @@ function renderLocation() {
         showWinScreen();
         return;
     }
-
     nodeVisitedCount++;
-
     document.getElementById('loc-name').innerText = "📍 " + node.name;
     document.getElementById('scenario-text').innerText = node.text;
 
-    const choices = [
-        { key: 'A', data: node.A },
-        { key: 'B', data: node.B }
-    ];
+    const choices = [{ key: 'A', data: node.A }, { key: 'B', data: node.B }];
     if (Math.random() < 0.5) choices.reverse();
 
     const choiceBox = document.getElementById('choice-buttons');
@@ -275,8 +277,6 @@ function renderLocation() {
 
 function selectChoice(nextNodeId) {
     pendingNextNode = nextNodeId;
-
-    // Trigger Church Ad Interstitial instead of Mini-game (~35% chance after node 2)
     if (nodeVisitedCount > 2 && Math.random() < 0.35) {
         triggerChurchAdScreen();
     } else {
@@ -284,7 +284,6 @@ function selectChoice(nextNodeId) {
     }
 }
 
-// CHURCH AD SCREEN LOGIC (YOUTUBE STYLE 15s COUNTDOWN)
 function triggerChurchAdScreen() {
     document.getElementById('location-screen').classList.add('hidden');
     document.getElementById('minigame-screen').classList.add('hidden');
@@ -299,11 +298,9 @@ function triggerChurchAdScreen() {
     document.getElementById('ad-countdown-text').classList.remove('hidden');
 
     if (adTimerInterval) clearInterval(adTimerInterval);
-
     adTimerInterval = setInterval(() => {
         adSecondsLeft--;
         document.getElementById('ad-seconds').innerText = adSecondsLeft;
-
         if (adSecondsLeft <= 0) {
             clearInterval(adTimerInterval);
             document.getElementById('ad-countdown-text').classList.add('hidden');
@@ -317,9 +314,8 @@ function completeAdScreen() {
     renderLocation();
 }
 
-// STOPWATCH MINI-GAME LOGIC
 function setupNewTargetMiniGame() {
-    timerTarget = (Math.floor(Math.random() * 24) + 12) / 10; // 1.2s to 3.5s
+    timerTarget = (Math.floor(Math.random() * 24) + 12) / 10;
     timerAttemptCount = 0;
     resetMiniGameUI();
 }
@@ -328,7 +324,6 @@ function resetMiniGameUI() {
     document.getElementById('target-time').innerText = timerTarget.toFixed(1);
     document.getElementById('timer-status').innerText = "按 START 開始";
     document.getElementById('timer-status').style.color = "#e67e22";
-
     document.getElementById('game-result').classList.add('hidden');
     document.getElementById('btn-timer-start').classList.remove('hidden');
     document.getElementById('btn-timer-stop').classList.add('hidden');
@@ -350,15 +345,12 @@ function startTimer() {
 }
 
 function stopTimer() {
-    const stopTime = Date.now();
-    const elapsedTime = (stopTime - timerStartTime) / 1000;
+    const elapsedTime = (Date.now() - timerStartTime) / 1000;
     timerAttemptCount++;
-
     document.getElementById('btn-timer-stop').classList.add('hidden');
 
     const diff = Math.abs(elapsedTime - timerTarget);
     const tolerance = 0.35;
-
     const resultBox = document.getElementById('game-result');
     resultBox.classList.remove('hidden');
 
@@ -371,7 +363,6 @@ function stopTimer() {
         document.getElementById('timer-status').innerText = "❌ 差距太大！";
         document.getElementById('timer-status').style.color = "#e74c3c";
         resultBox.innerHTML = `實際時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
-        
         if (timerAttemptCount < 2) {
             document.getElementById('btn-timer-retry').innerText = "再試一次 (剩餘 1 次機會)";
             document.getElementById('btn-timer-retry').classList.remove('hidden');
@@ -381,14 +372,8 @@ function stopTimer() {
     }
 }
 
-function retryMiniGame() {
-    resetMiniGameUI();
-}
-
-function completeMiniGame() {
-    currentNode = pendingNextNode;
-    renderLocation();
-}
+function retryMiniGame() { resetMiniGameUI(); }
+function completeMiniGame() { currentNode = pendingNextNode; renderLocation(); }
 
 function showWinScreen() {
     document.getElementById('location-screen').classList.add('hidden');
@@ -415,7 +400,7 @@ function showWinScreen() {
         document.getElementById('name-input-section').classList.add('hidden');
     }
 
-    renderScoreboard();
+    listenToScoreboard();
 }
 
 function submitScore() {
@@ -429,24 +414,48 @@ function submitScore() {
     const rawTime = localStorage.getItem('exodus_timestamp_raw') || Date.now();
 
     localStorage.setItem('exodus_player_name', nameInput);
-
-    let scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
-    scores = scores.filter(s => s.name !== nameInput);
-    scores.push({ name: nameInput, time: timeStr, raw: parseInt(rawTime) });
-    scores.sort((a, b) => a.raw - b.raw);
-    localStorage.setItem('exodus_scores', JSON.stringify(scores));
-
     document.getElementById('name-input-section').classList.add('hidden');
-    renderScoreboard();
+
+    if (db) {
+        // Submit to Firebase
+        db.ref('scores/' + nameInput.replace(/[\.\#\$\[\]]/g, "_")).set({
+            name: nameInput,
+            time: timeStr,
+            raw: parseInt(rawTime)
+        });
+    } else {
+        // Local Fallback
+        let scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
+        scores = scores.filter(s => s.name !== nameInput);
+        scores.push({ name: nameInput, time: timeStr, raw: parseInt(rawTime) });
+        scores.sort((a, b) => a.raw - b.raw);
+        localStorage.setItem('exodus_scores', JSON.stringify(scores));
+        renderScoreList(scores);
+    }
 }
 
-function renderScoreboard() {
-    const scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
+function listenToScoreboard() {
+    if (db) {
+        // Real-time listener for Firebase across ALL devices
+        db.ref('scores').orderByChild('raw').on('value', (snapshot) => {
+            const scores = [];
+            snapshot.forEach((childSnapshot) => {
+                scores.push(childSnapshot.val());
+            });
+            renderScoreList(scores);
+        });
+    } else {
+        const scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
+        renderScoreList(scores);
+    }
+}
+
+function renderScoreList(scores) {
     const currentName = localStorage.getItem('exodus_player_name');
     const scoreList = document.getElementById('score-list');
-
     scoreList.innerHTML = "";
-    if (scores.length === 0) {
+
+    if (!scores || scores.length === 0) {
         scoreList.innerHTML = `<div style="text-align:center; color:#888; padding:8px;">暫無紀錄</div>`;
         return;
     }
@@ -469,7 +478,7 @@ function renderScoreboard() {
         `;
     });
 
-    if (userRank > 0 && localStorage.getItem('exodus_player_name')) {
+    if (userRank > 0 && currentName) {
         const rankDisplay = document.getElementById('rank-result');
         rankDisplay.classList.remove('hidden');
         rankDisplay.innerText = `🏆 你係今場第 ${userRank} 位完成者！`;
@@ -477,13 +486,11 @@ function renderScoreboard() {
 }
 
 function clearScoreboard() {
-    if (confirm("確定要清空排行榜和本地遊戲紀錄嗎？（適合正式活動開場前使用）")) {
-        localStorage.removeItem('exodus_scores');
-        localStorage.removeItem('exodus_completion_time');
-        localStorage.removeItem('exodus_timestamp_raw');
-        localStorage.removeItem('exodus_player_name');
+    if (confirm("確定要清空全場排行榜嗎？（跨裝置資料亦會清空）")) {
+        if (db) db.ref('scores').remove();
+        localStorage.clear();
         alert("排行榜已清空！");
-        renderScoreboard();
+        location.reload();
     }
 }
 
