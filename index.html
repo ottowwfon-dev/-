@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>聖經尋寶大冒險 - 出埃及記</title>
-    <!-- Firebase SDKs -->
+    <!-- Firebase SDKs (可自由保留或移除) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
     <style>
@@ -14,6 +14,7 @@
             --bg: #f8f9fa;
             --card-bg: #ffffff;
             --success: #27ae60;
+            --danger: #e74c3c;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -43,13 +44,23 @@
         .btn-opt { background-color: #3498db; color: white; }
         .btn-opt:nth-child(even) { background-color: #e67e22; }
         .btn-action { background-color: var(--success); color: white; width: 100%; font-size: 18px; }
-        .btn-stop { background-color: #e74c3c; color: white; width: 100%; font-size: 18px; }
+        .btn-stop { background-color: var(--danger); color: white; width: 100%; font-size: 22px; padding: 18px; animation: pulse 1.5s infinite; }
         .btn-sec { background-color: #7f8c8d; color: white; width: 100%; font-size: 14px; padding: 10px; }
         button:active { transform: scale(0.97); opacity: 0.9; }
         
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
         .timer-box {
-            font-size: 36px; font-weight: bold; color: var(--primary);
-            margin: 20px 0; padding: 20px; background: #f0f3f4; border-radius: 10px;
+            font-size: 32px; font-weight: bold; color: var(--primary);
+            margin: 15px 0; padding: 15px; background: #f0f3f4; border-radius: 10px;
+        }
+        .instruction-box {
+            background: #e8f4f8; border-left: 4px solid #3498db;
+            padding: 10px; text-align: left; font-size: 14px; color: #2c3e50; margin-bottom: 15px; border-radius: 4px;
         }
         .result-box { margin: 15px 0; font-size: 16px; line-height: 1.5; }
         
@@ -66,10 +77,14 @@
             padding: 8px 0; border-bottom: 1px dashed #ccc; font-size: 14px;
         }
         .score-item:last-child { border-bottom: none; }
-        .notice-box {
-            background: #fff3cd; color: #856404; padding: 12px;
-            border-radius: 8px; margin-top: 15px; font-size: 13px; text-align: left;
+        
+        /* 大警告框樣式 */
+        .primary-warning-box {
+            background: #fff0f0; border: 3px solid var(--danger); color: #900;
+            padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left; font-size: 14px; line-height: 1.6;
         }
+        .primary-warning-box h3 { margin: 0 0 8px 0; font-size: 17px; color: var(--danger); text-align: center; }
+
         .ad-card { border: 2px solid #e74c3c; background: #fffdfd; }
         .ad-tag {
             display: inline-block; background: #f1c40f; color: #000;
@@ -93,11 +108,11 @@
                 🚩 <b>遊戲目標：</b>由埃及蘭塞出發，尋找正確路線，最快抵達西奈山！<br><br>
                 🧭 <b>路線選擇：</b>每個地點均有 2 個選擇。選擇無絕對對錯，走錯路只會經歷更多旅途挑戰！<br><br>
                 ⏱️ <b>旅途 Mini-game：</b>每次選擇路線後，需要進行 Stopwatch 盲測挑戰。在隱藏時間下按 STOP 命中目標秒數！<br><br>
-                🏆 <b>勝出條件：</b>以<b>最早抵達終點的時間戳記</b>為準，完成後記得截圖上載！
+                🏆 <b>勝出核實：</b>完成遊戲後，<b>必須將「完成畫面」截圖連同「遊戲券」相片傳送到 WhatsApp 群組</b>作實！
             </div>
             <div class="btn-group">
                 <button class="btn-action" onclick="startGame()">🚀 開始冒險</button>
-                <button class="btn-sec" onclick="showScoreboardFromHome()">🏆 查看當前排行榜</button>
+                <button class="btn-sec" onclick="showScoreboardFromHome()">🏆 查看當前排行榜 (參考)</button>
             </div>
         </div>
     </div>
@@ -129,14 +144,21 @@
     <!-- 3. MINI-GAME SCREEN -->
     <div id="minigame-screen" class="hidden">
         <div class="card">
-            <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰</div>
-            <div style="font-size: 18px; font-weight: bold;">按 STOP 捕捉目標時間！</div>
+            <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰：Stopwatch 盲測</div>
+            
+            <div class="instruction-box" id="minigame-instruction">
+                <b>💡 玩法說明：</b><br>
+                1. 按下 <b>START</b> 開始計時（畫面會隱藏秒數）。<br>
+                2. 在心裡默數，當你覺得時間達到目標秒數時，立即按下 <b>STOP</b>！
+            </div>
+
             <div class="timer-box">目標：<span id="target-time">2.0</span> 秒</div>
-            <div id="timer-status" style="font-size: 18px; color: #e67e22; height: 30px;">按 START 開始</div>
+            <div id="timer-status" style="font-size: 18px; font-weight: bold; color: #e67e22; height: 35px; line-height:35px;">準備好了嗎？</div>
             <div class="result-box hidden" id="game-result"></div>
+            
             <div style="margin-top: 15px;">
-                <button id="btn-timer-start" class="btn-action" onclick="startTimer()">START</button>
-                <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">STOP</button>
+                <button id="btn-timer-start" class="btn-action" onclick="startTimer()">▶️ START（開始計時）</button>
+                <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">⏹️ STOP（按此停止！）</button>
                 <button id="btn-timer-next" class="btn-action hidden" onclick="completeMiniGame()">繼續旅程 ➔</button>
                 <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="retryMiniGame()">再試一次 (剩餘 1 次機會)</button>
                 <button id="btn-timer-newtarget" class="btn-opt hidden" style="width:100%; margin-top:8px; background:#e67e22;" onclick="setupNewTargetMiniGame()">重置新目標秒數</button>
@@ -148,10 +170,19 @@
     <div id="win-screen" class="hidden">
         <div class="card" style="border-color: var(--success);">
             <div class="loc-title" style="color: var(--success);" id="win-title">🎉 恭喜抵達西奈山！</div>
-            <div style="font-size: 14px; color: #555;" id="time-display-box">完成時間：<b id="completion-time">-</b></div>
+            <div style="font-size: 16px; color: #333;" id="time-display-box">抵達時間戳記：<b id="completion-time" style="color:var(--danger); font-size:20px;">-</b></div>
             
+            <!-- 大警告 / 核實指引 -->
+            <div class="primary-warning-box" id="screenshot-notice">
+                <h3>⚠️ 勝出核實重要須知 ⚠️</h3>
+                <b>1. 📸 請立即截圖此畫面</b>（需清晰顯示上方時間戳記）。<br>
+                <b>2. 🎟️ 拍下你的「遊戲券」實體相片。</b><br>
+                <b>3. 📲 將【完成畫面截圖 + 遊戲券相片】一併傳送到 WhatsApp 大會群組！</b><br><br>
+                <span style="font-size:12px; color:#666;">*下方排行榜僅供現場參考，大會將嚴格以 WhatsApp 群組收到訊息的時間及完整相片為最終得獎依據。</span>
+            </div>
+
             <div id="name-input-section" style="margin-top: 15px;">
-                <p style="font-size: 14px; margin-bottom: 8px;">🏆 請輸入名字登上排行榜：</p>
+                <p style="font-size: 14px; margin-bottom: 8px;">🏆 輸入名字登記現場參考排行榜：</p>
                 <input type="text" id="player-name" placeholder="輸入姓名 / 暱稱" maxlength="15">
                 <button class="btn-action" id="btn-submit" onclick="submitScore()">提交成績</button>
             </div>
@@ -159,13 +190,8 @@
             <div id="rank-result" class="hidden" style="margin: 15px 0; font-size: 18px; font-weight: bold; color: var(--accent);"></div>
 
             <div class="scoreboard">
-                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">🏆 全場跨裝置排行榜 (即時連線)</div>
+                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">🏆 現場參考排行榜</div>
                 <div id="score-list">載入排行榜中...</div>
-            </div>
-
-            <div class="notice-box" id="screenshot-notice">
-                📸 <b>記得截圖！</b><br>
-                請將此畫面截圖並發到 WhatsApp 群組報到！
             </div>
 
             <div style="margin-top: 15px;">
@@ -177,8 +203,7 @@
 </div>
 
 <script>
-// --- FIREBASE INITIALIZATION ---
-// Replace the config below with your own Firebase Project Keys (See setup steps below)
+// Firebase 配置（若不使用全場連線，此部分亦不影響本地運行）
 const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
     authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -194,10 +219,10 @@ try {
     firebase.initializeApp(firebaseConfig);
     db = firebase.database();
 } catch (e) {
-    console.warn("Firebase not configured yet. Falling back to local display.");
+    console.warn("Firebase 未配置，使用 LocalStorage 本地模式。");
 }
 
-// GAME DATA
+// 遊戲節點資料
 const nodesData = {
     1: { name: "蘭塞", text: "大隊剛剛離開蘭塞。前面地勢平坦，但遠處幾條路開始分開。天色仲早，你哋準備向前行。", A: { txt: "沿住大隊留下嘅車轍繼續向前", next: 3 }, B: { txt: "見北面有水源，轉向水邊行", next: 2 } },
     2: { name: "密奪", text: "你哋發現周圍開始見唔到大隊蹤影。遠處有煙，但方向唔太清楚。", A: { txt: "跟住遠處煙柱，向高地方向走", next: 4 }, B: { txt: "避開主路，沿石堆之間嘅小路走", next: 9 } },
@@ -215,7 +240,7 @@ const nodesData = {
 };
 
 const churchAds = [
-    "<b>「今個主日記得準時返嚟聚會……」</b><br><br>等等，你而家咪已經喺周年聚餐囉！繼續食飯啦！",
+    "<b>「今個主日記得準時返嚟聚會……」</b><br><br>等等，你而家咪已經喺聚餐囉！繼續食飯啦！",
     "<b>「曠野路途遙遠，請注意補充熱量！」</b><br><br>大會溫馨提示：記得食多幾口菜同肉呀！",
     "<b>「你以為選右邊就係屬靈正確？」</b><br><br>其實兩條路都係同一個設計師寫嘅，慢慢揀啦😏"
 ];
@@ -228,6 +253,7 @@ let nodeVisitedCount = 0;
 let clickHeaderCount = 0;
 let adTimerInterval = null;
 let adSecondsLeft = 15;
+let timerStartTime = 0;
 
 function startGame() {
     currentNode = 1;
@@ -243,7 +269,7 @@ function goHome() {
 
 function showScoreboardFromHome() {
     document.getElementById('home-screen').classList.add('hidden');
-    document.getElementById('win-title').innerText = "🏆 全場排行榜";
+    document.getElementById('win-title').innerText = "🏆 現場參考排行榜";
     document.getElementById('time-display-box').classList.add('hidden');
     document.getElementById('name-input-section').classList.add('hidden');
     document.getElementById('screenshot-notice').classList.add('hidden');
@@ -322,7 +348,7 @@ function setupNewTargetMiniGame() {
 
 function resetMiniGameUI() {
     document.getElementById('target-time').innerText = timerTarget.toFixed(1);
-    document.getElementById('timer-status').innerText = "按 START 開始";
+    document.getElementById('timer-status').innerText = "按下 START 開始計時！";
     document.getElementById('timer-status').style.color = "#e67e22";
     document.getElementById('game-result').classList.add('hidden');
     document.getElementById('btn-timer-start').classList.remove('hidden');
@@ -340,7 +366,7 @@ function startTimer() {
     timerStartTime = Date.now();
     document.getElementById('btn-timer-start').classList.add('hidden');
     document.getElementById('btn-timer-stop').classList.remove('hidden');
-    document.getElementById('timer-status').innerText = "⏱️ 計時中……（已隱藏）";
+    document.getElementById('timer-status').innerHTML = "⏱️ 計時中（已隱藏秒數）<br><span style='font-size:14px; font-weight:normal; color:#e74c3c;'>請在心裡默數，到達時按下面的紅色 STOP！</span>";
     document.getElementById('timer-status').style.color = "#27ae60";
 }
 
@@ -357,12 +383,12 @@ function stopTimer() {
     if (diff <= tolerance) {
         document.getElementById('timer-status').innerText = "✓ 挑戰成功！";
         document.getElementById('timer-status').style.color = "#27ae60";
-        resultBox.innerHTML = `實際時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒`;
+        resultBox.innerHTML = `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>誤差：<b>${diff.toFixed(2)}</b> 秒 (合格範疇)`;
         document.getElementById('btn-timer-next').classList.remove('hidden');
     } else {
-        document.getElementById('timer-status').innerText = "❌ 差距太大！";
+        document.getElementById('timer-status').innerText = "❌ 差距太遠！";
         document.getElementById('timer-status').style.color = "#e74c3c";
-        resultBox.innerHTML = `實際時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
+        resultBox.innerHTML = `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>誤差：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
         if (timerAttemptCount < 2) {
             document.getElementById('btn-timer-retry').innerText = "再試一次 (剩餘 1 次機會)";
             document.getElementById('btn-timer-retry').classList.remove('hidden');
@@ -417,14 +443,12 @@ function submitScore() {
     document.getElementById('name-input-section').classList.add('hidden');
 
     if (db) {
-        // Submit to Firebase
         db.ref('scores/' + nameInput.replace(/[\.\#\$\[\]]/g, "_")).set({
             name: nameInput,
             time: timeStr,
             raw: parseInt(rawTime)
         });
     } else {
-        // Local Fallback
         let scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
         scores = scores.filter(s => s.name !== nameInput);
         scores.push({ name: nameInput, time: timeStr, raw: parseInt(rawTime) });
@@ -436,7 +460,6 @@ function submitScore() {
 
 function listenToScoreboard() {
     if (db) {
-        // Real-time listener for Firebase across ALL devices
         db.ref('scores').orderByChild('raw').on('value', (snapshot) => {
             const scores = [];
             snapshot.forEach((childSnapshot) => {
@@ -486,7 +509,7 @@ function renderScoreList(scores) {
 }
 
 function clearScoreboard() {
-    if (confirm("確定要清空全場排行榜嗎？（跨裝置資料亦會清空）")) {
+    if (confirm("確定要清空排行榜嗎？")) {
         if (db) db.ref('scores').remove();
         localStorage.clear();
         alert("排行榜已清空！");
