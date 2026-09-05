@@ -67,9 +67,18 @@
             background: #fff3cd; color: #856404; padding: 12px;
             border-radius: 8px; margin-top: 15px; font-size: 13px; text-align: left;
         }
-        .ad-box {
-            background: #e8f4f8; border: 1px dashed #3498db;
-            padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #2c3e50; text-align: left;
+        
+        /* YouTube Style Ad Interstitial */
+        .ad-card {
+            border: 2px solid #e74c3c;
+            background: #fffdfd;
+        }
+        .ad-tag {
+            display: inline-block; background: #f1c40f; color: #000;
+            font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-bottom: 8px;
+        }
+        .ad-timer-countdown {
+            font-size: 14px; color: #7f8c8d; margin-top: 15px; font-weight: bold;
         }
         .hidden { display: none; }
     </style>
@@ -99,7 +108,6 @@
 
     <!-- 1. LOCATION SCREEN -->
     <div id="location-screen" class="hidden">
-        <div id="ad-container" class="ad-box hidden"></div>
         <div class="card">
             <div class="loc-title" id="loc-name">📍 載入中...</div>
             <div class="scenario" id="scenario-text">...</div>
@@ -107,7 +115,24 @@
         </div>
     </div>
 
-    <!-- 2. MINI-GAME SCREEN (STOPWATCH) -->
+    <!-- 2. CHURCH AD SCREEN (REPLACES MINI-GAME WITH 15S COUNTDOWN) -->
+    <div id="ad-screen" class="hidden">
+        <div class="card ad-card">
+            <div><span class="ad-tag">贊助商廣告</span></div>
+            <div class="loc-title" style="color:#c0392b;">📢 教會特別廣播</div>
+            <div class="scenario" id="ad-text" style="text-align:center; font-size:16px;">
+                ...
+            </div>
+            <div class="ad-timer-countdown" id="ad-countdown-text">
+                倒數 <span id="ad-seconds" style="color:#e74c3c; font-size:18px;">15</span> 秒後可跳過廣告
+            </div>
+            <div style="margin-top: 15px;">
+                <button id="btn-skip-ad" class="btn-action hidden" onclick="completeAdScreen()">跳過廣告 / 繼續旅程 ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. MINI-GAME SCREEN (STOPWATCH) -->
     <div id="minigame-screen" class="hidden">
         <div class="card">
             <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰</div>
@@ -125,13 +150,13 @@
                 <button id="btn-timer-start" class="btn-action" onclick="startTimer()">START</button>
                 <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">STOP</button>
                 <button id="btn-timer-next" class="btn-action hidden" onclick="completeMiniGame()">繼續旅程 ➔</button>
-                <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="retryMiniGame()">再試一次 (剩餘 1 次)</button>
+                <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="retryMiniGame()">再試一次 (剩餘 1 次機會)</button>
                 <button id="btn-timer-newtarget" class="btn-opt hidden" style="width:100%; margin-top:8px; background:#e67e22;" onclick="setupNewTargetMiniGame()">重置新目標秒數</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. WINNING & SCOREBOARD SCREEN -->
+    <!-- 4. WINNING & SCOREBOARD SCREEN -->
     <div id="win-screen" class="hidden">
         <div class="card" style="border-color: var(--success);">
             <div class="loc-title" style="color: var(--success);" id="win-title">🎉 恭喜抵達西奈山！</div>
@@ -182,9 +207,9 @@ const nodesData = {
 };
 
 const churchAds = [
-    "📢 <b>教會周年聚餐特別廣播：</b>「今個主日記得準時返嚟……等等，你而家咪已經喺周年聚餐囉！繼續食飯！」",
-    "📢 <b>大會溫馨提示：</b>「請注意，曠野路途遙遠，請定時補充熱量同美味食物！」",
-    "📢 <b>四方牆廣播：</b>「你以為選右邊就係屬靈正確？其實兩個選項都係同一個設計師寫嘅😏」"
+    "<b>「今個主日記得準時返嚟聚會……」</b><br><br>等等，你而家咪已經喺周年聚餐囉！繼續食飯啦！",
+    "<b>「曠野路途遙遠，請注意補充熱量！」</b><br><br>大會溫馨提示：記得食多幾口菜同肉呀！",
+    "<b>「你以為選右邊就係屬靈正確？」</b><br><br>其實兩條路都係同一個設計師寫嘅，慢慢揀啦😏"
 ];
 
 let currentNode = 1;
@@ -193,6 +218,9 @@ let timerTarget = 2.0;
 let timerAttemptCount = 0;
 let nodeVisitedCount = 0;
 let clickHeaderCount = 0;
+
+let adTimerInterval = null;
+let adSecondsLeft = 15;
 
 function startGame() {
     currentNode = 1;
@@ -225,16 +253,6 @@ function renderLocation() {
 
     nodeVisitedCount++;
 
-    // Random Church Ad Trigger (Every ~3 nodes, 30% chance)
-    const adContainer = document.getElementById('ad-container');
-    if (nodeVisitedCount > 1 && Math.random() < 0.4) {
-        const randomAd = churchAds[Math.floor(Math.random() * churchAds.length)];
-        adContainer.innerHTML = randomAd;
-        adContainer.classList.remove('hidden');
-    } else {
-        adContainer.classList.add('hidden');
-    }
-
     document.getElementById('loc-name').innerText = "📍 " + node.name;
     document.getElementById('scenario-text').innerText = node.text;
 
@@ -252,16 +270,56 @@ function renderLocation() {
 
     document.getElementById('location-screen').classList.remove('hidden');
     document.getElementById('minigame-screen').classList.add('hidden');
+    document.getElementById('ad-screen').classList.add('hidden');
 }
 
 function selectChoice(nextNodeId) {
     pendingNextNode = nextNodeId;
-    setupNewTargetMiniGame();
+
+    // Trigger Church Ad Interstitial instead of Mini-game (~35% chance after node 2)
+    if (nodeVisitedCount > 2 && Math.random() < 0.35) {
+        triggerChurchAdScreen();
+    } else {
+        setupNewTargetMiniGame();
+    }
 }
 
+// CHURCH AD SCREEN LOGIC (YOUTUBE STYLE 15s COUNTDOWN)
+function triggerChurchAdScreen() {
+    document.getElementById('location-screen').classList.add('hidden');
+    document.getElementById('minigame-screen').classList.add('hidden');
+    document.getElementById('ad-screen').classList.remove('hidden');
+
+    const randomAd = churchAds[Math.floor(Math.random() * churchAds.length)];
+    document.getElementById('ad-text').innerHTML = randomAd;
+
+    adSecondsLeft = 15;
+    document.getElementById('ad-seconds').innerText = adSecondsLeft;
+    document.getElementById('btn-skip-ad').classList.add('hidden');
+    document.getElementById('ad-countdown-text').classList.remove('hidden');
+
+    if (adTimerInterval) clearInterval(adTimerInterval);
+
+    adTimerInterval = setInterval(() => {
+        adSecondsLeft--;
+        document.getElementById('ad-seconds').innerText = adSecondsLeft;
+
+        if (adSecondsLeft <= 0) {
+            clearInterval(adTimerInterval);
+            document.getElementById('ad-countdown-text').classList.add('hidden');
+            document.getElementById('btn-skip-ad').classList.remove('hidden');
+        }
+    }, 1000);
+}
+
+function completeAdScreen() {
+    currentNode = pendingNextNode;
+    renderLocation();
+}
+
+// STOPWATCH MINI-GAME LOGIC
 function setupNewTargetMiniGame() {
-    // Target time varies by 0.1s step (Range: 1.2s to 3.5s)
-    timerTarget = (Math.floor(Math.random() * 24) + 12) / 10;
+    timerTarget = (Math.floor(Math.random() * 24) + 12) / 10; // 1.2s to 3.5s
     timerAttemptCount = 0;
     resetMiniGameUI();
 }
@@ -279,6 +337,7 @@ function resetMiniGameUI() {
     document.getElementById('btn-timer-newtarget').classList.add('hidden');
 
     document.getElementById('location-screen').classList.add('hidden');
+    document.getElementById('ad-screen').classList.add('hidden');
     document.getElementById('minigame-screen').classList.remove('hidden');
 }
 
@@ -298,7 +357,7 @@ function stopTimer() {
     document.getElementById('btn-timer-stop').classList.add('hidden');
 
     const diff = Math.abs(elapsedTime - timerTarget);
-    const tolerance = 0.35; // Kept as requested
+    const tolerance = 0.35;
 
     const resultBox = document.getElementById('game-result');
     resultBox.classList.remove('hidden');
@@ -334,6 +393,7 @@ function completeMiniGame() {
 function showWinScreen() {
     document.getElementById('location-screen').classList.add('hidden');
     document.getElementById('minigame-screen').classList.add('hidden');
+    document.getElementById('ad-screen').classList.add('hidden');
     
     document.getElementById('win-title').innerText = "🎉 恭喜抵達西奈山！";
     document.getElementById('time-display-box').classList.remove('hidden');
