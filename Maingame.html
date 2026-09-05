@@ -1,16 +1,18 @@
+```html
 <!DOCTYPE html>
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
-
 <html lang="zh-HK">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>聖經尋寶大冒險 - 出埃及記</title>
+
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
+
         :root {
             --primary: #2c3e50;
             --accent: #e67e22;
@@ -20,569 +22,2495 @@
             --danger: #e74c3c;
             --gold: #f1c40f;
         }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg);
-            margin: 0; padding: 15px;
-            display: flex; justify-content: center; align-items: center;
-            min-height: 98vh; box-sizing: border-box;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 98vh;
+            box-sizing: border-box;
         }
+
         .game-container {
-            width: 100%; max-width: 450px;
-            background: var(--card-bg); border-radius: 16px;
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            padding: 20px; box-sizing: border-box; position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
         }
-        h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; cursor: pointer; user-select: none; }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            color: var(--primary);
+            margin-top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
         .card {
-            border: 2px solid var(--primary); border-radius: 12px;
-            padding: 18px; text-align: center; background: #fff; margin-bottom: 15px;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            background: #fff;
+            margin-bottom: 15px;
         }
-        .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 12px; }
-        .scenario { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 20px; text-align: left; }
-        .btn-group { display: flex; gap: 12px; flex-direction: column; }
+
+        .loc-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .scenario {
+            font-size: 15px;
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-direction: column;
+        }
+
         button {
-            padding: 14px; font-size: 15px; font-weight: bold;
-            border: none; border-radius: 10px; cursor: pointer; transition: 0.15s;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.15s;
         }
-        .btn-opt { background-color: #3498db; color: white; }
-        .btn-opt:nth-child(even) { background-color: #e67e22; }
-        .btn-action { background-color: var(--success); color: white; width: 100%; font-size: 18px; }
-        .btn-stop { background-color: var(--danger); color: white; width: 100%; font-size: 22px; padding: 18px; animation: pulse 1.5s infinite; }
-        .btn-sec { background-color: #7f8c8d; color: white; width: 100%; font-size: 14px; padding: 10px; }
-        button:active { transform: scale(0.97); opacity: 0.9; }
-        
+
+        button:active {
+            transform: scale(0.97);
+            opacity: 0.9;
+        }
+
+        .btn-opt {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .btn-opt:nth-child(even) {
+            background-color: #e67e22;
+        }
+
+        .btn-action {
+            background-color: var(--success);
+            color: white;
+            width: 100%;
+            font-size: 18px;
+        }
+
+        .btn-stop {
+            background-color: var(--danger);
+            color: white;
+            width: 100%;
+            font-size: 22px;
+            padding: 18px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-sec {
+            background-color: #7f8c8d;
+            color: white;
+            width: 100%;
+            font-size: 14px;
+            padding: 10px;
+        }
+
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.03);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
 
         .timer-box {
-            font-size: 32px; font-weight: bold; color: var(--primary);
-            margin: 15px 0; padding: 15px; background: #f0f3f4; border-radius: 10px;
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f3f4;
+            border-radius: 10px;
         }
+
         .instruction-box {
-            background: #e8f4f8; border-left: 4px solid #3498db;
-            padding: 10px; text-align: left; font-size: 14px; color: #2c3e50; margin-bottom: 15px; border-radius: 4px;
+            background: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 10px;
+            text-align: left;
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            border-radius: 4px;
         }
-        .result-box { margin: 15px 0; font-size: 16px; line-height: 1.5; }
-        
+
+        .result-box {
+            margin: 15px 0;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
         input[type="text"] {
-            width: 100%; padding: 12px; font-size: 16px; border-radius: 8px;
-            border: 1px solid #ccc; margin-bottom: 12px; box-sizing: border-box; text-align: center;
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+            text-align: center;
         }
+
         .scoreboard {
-            margin-top: 15px; text-align: left; background: #f8f9fa;
-            border-radius: 8px; padding: 10px; border: 1px solid #ddd;
+            margin-top: 15px;
+            text-align: left;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px;
+            border: 1px solid #ddd;
         }
+
         .score-item {
-            display: flex; justify-content: space-between;
-            padding: 8px 0; border-bottom: 1px dashed #ccc; font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 14px;
         }
-        .score-item:last-child { border-bottom: none; }
-        
+
+        .score-item:last-child {
+            border-bottom: none;
+        }
+
         .primary-warning-box {
-            background: #fff0f0; border: 3px solid var(--danger); color: #900;
-            padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left; font-size: 14px; line-height: 1.6;
+            background: #fff0f0;
+            border: 3px solid var(--danger);
+            color: #900;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.6;
         }
-        .primary-warning-box h3 { margin: 0 0 8px 0; font-size: 17px; color: var(--danger); text-align: center; }
 
-        .ad-card { border: 2px solid #e74c3c; background: #fffdfd; }
+        .primary-warning-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 17px;
+            color: var(--danger);
+            text-align: center;
+        }
+
+        .ad-card {
+            border: 2px solid #e74c3c;
+            background: #fffdfd;
+        }
+
         .ad-tag {
-            display: inline-block; background: var(--gold); color: #000;
-            font-size: 11px; font-weight: bold; padding: 2px 6px; border-radius: 4px; margin-bottom: 8px;
+            display: inline-block;
+            background: var(--gold);
+            color: #000;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 8px;
         }
-        .ad-timer-countdown { font-size: 14px; color: #7f8c8d; margin-top: 15px; font-weight: bold; }
-        .hidden { display: none; }
 
-        /* Modal Popup Style for Achievement */
+        .ad-timer-countdown {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .ad-run-counter {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Achievement Modal */
+
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center;
-            z-index: 999;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            z-index: 9999;
+
+            padding: 20px;
+            box-sizing: border-box;
         }
+
         .modal-card {
-            background: #fff; border: 4px solid var(--gold); border-radius: 16px;
-            padding: 20px; width: 85%; max-width: 380px; text-align: center;
-            box-shadow: 0 0 25px rgba(241, 196, 15, 0.6);
+            background: #fff;
+            border: 4px solid var(--gold);
+            border-radius: 16px;
+            padding: 20px;
+            width: 85%;
+            max-width: 380px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(241,196,15,0.6);
         }
+
     </style>
 </head>
+
+
 <body>
 
 <div class="game-container">
-    <h1 onclick="adminHeaderClick()">⛪ 聖經尋寶大冒險</h1>
 
-    <!-- 0. HOMEPAGE -->
+    <h1 onclick="adminHeaderClick()">
+        ⛪ 聖經尋寶大冒險 - 出埃及記
+    </h1>
+
+
+    <!-- =====================================================
+         0. HOME PAGE
+         ===================================================== -->
+
     <div id="home-screen">
+
         <div class="card">
-            <div class="loc-title">📜 遊戲玩法指引</div>
+
+            <div class="loc-title">
+                📜 遊戲玩法指引
+            </div>
+
             <div class="scenario">
-                <b>歡迎來到出埃及記曠野大冒險！</b><br><br>
-                🚩 <b>遊戲目標：</b>由埃及蘭塞出發，尋找正確路線，最快抵達西奈山！<br><br>
-                🧭 <b>路線選擇：</b>每個地點均有 2 個選擇。選擇無絕對對錯，走錯路只會經歷更多旅途挑戰！<br><br>
-                ⏱️ <b>旅途 Mini-game：</b>每次選擇路線後，需要進行 Stopwatch 盲測挑戰。在隱藏時間下按 STOP 命中目標秒數！<br><br>
-                🏆 <b>勝出核實：</b>完成遊戲後，<b>必須將「完成畫面」截圖連同「遊戲券」相片傳送到 WhatsApp 群組</b>作實！
+
+                <b>歡迎來到出埃及記曠野大冒險！</b>
+                <br><br>
+
+                🚩 <b>遊戲目標：</b>
+                由埃及蘭塞出發，尋找正確路線，最快抵達西奈山！
+                <br><br>
+
+                🧭 <b>路線選擇：</b>
+                每個地點均有 2 個選擇。
+                選擇無絕對對錯，走錯路只會經歷更多旅途挑戰！
+                <br><br>
+
+                ⏱️ <b>旅途 Mini-game：</b>
+                每次選擇路線後，需要進行 Stopwatch 盲測挑戰。
+                在隱藏時間下按 STOP 命中目標秒數！
+                <br><br>
+
+                🎁 <b>隱藏成就：</b>
+                同一次冒險 Run 內開啟
+                <b>15 次廣告</b>，
+                可以解鎖隱藏成就！
+                <br><br>
+
+                🏆 <b>勝出核實：</b>
+                完成遊戲後，
+                <b>必須將「完成畫面」截圖連同「遊戲券」相片傳送到 WhatsApp 群組</b>
+                作實！
+
             </div>
+
             <div class="btn-group">
-                <button class="btn-action" onclick="startGame()">🚀 開始冒險</button>
-                <button class="btn-sec" onclick="showScoreboardFromHome()">🏆 查看當前排行榜 (參考)</button>
+
+                <button
+                    class="btn-action"
+                    onclick="startGame()">
+                    🚀 開始冒險
+                </button>
+
+                <button
+                    class="btn-sec"
+                    onclick="showScoreboardFromHome()">
+                    🏆 查看當前排行榜 (參考)
+                </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- 1. LOCATION SCREEN -->
+
+    <!-- =====================================================
+         1. LOCATION SCREEN
+         ===================================================== -->
+
     <div id="location-screen" class="hidden">
+
         <div class="card">
-            <div class="loc-title" id="loc-name">📍 載入中...</div>
-            <div class="scenario" id="scenario-text">...</div>
-            <div class="btn-group" id="choice-buttons"></div>
+
+            <div
+                class="loc-title"
+                id="loc-name">
+                📍 載入中...
+            </div>
+
+            <div
+                class="scenario"
+                id="scenario-text">
+                ...
+            </div>
+
+            <div
+                class="btn-group"
+                id="choice-buttons">
+            </div>
+
         </div>
+
     </div>
 
-    <!-- 2. CHURCH AD SCREEN -->
+
+    <!-- =====================================================
+         2. CHURCH AD SCREEN
+         ===================================================== -->
+
     <div id="ad-screen" class="hidden">
+
         <div class="card ad-card">
-            <div><span class="ad-tag">贊助商廣告</span></div>
-            <div class="loc-title" style="color:#c0392b;">📢 教會特別廣播</div>
-            <div class="scenario" id="ad-text" style="text-align:center; font-size:16px;">...</div>
-            <div class="ad-timer-countdown" id="ad-countdown-text">
-                倒數 <span id="ad-seconds" style="color:#e74c3c; font-size:18px;">15</span> 秒後可跳過廣告
+
+            <div>
+                <span class="ad-tag">
+                    贊助商廣告
+                </span>
             </div>
+
+            <div
+                class="loc-title"
+                style="color:#c0392b;">
+                📢 教會特別廣播
+            </div>
+
+            <div
+                class="scenario"
+                id="ad-text"
+                style="text-align:center; font-size:16px;">
+                ...
+            </div>
+
+            <div class="ad-run-counter">
+                本次冒險廣告進度：
+                <b>
+                    <span id="run-ad-count">0</span> / 15
+                </b>
+            </div>
+
+            <div
+                class="ad-timer-countdown"
+                id="ad-countdown-text">
+
+                倒數
+                <span
+                    id="ad-seconds"
+                    style="color:#e74c3c; font-size:18px;">
+                    15
+                </span>
+                秒後可跳過廣告
+
+            </div>
+
             <div style="margin-top: 15px;">
-                <button id="btn-skip-ad" class="btn-action hidden" onclick="completeAdScreen()">跳過廣告 / 繼續旅程 ➔</button>
+
+                <button
+                    id="btn-skip-ad"
+                    class="btn-action hidden"
+                    onclick="completeAdScreen()">
+                    跳過廣告 / 繼續旅程 ➔
+                </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- 3. MINI-GAME SCREEN -->
+
+    <!-- =====================================================
+         3. MINI-GAME SCREEN
+         ===================================================== -->
+
     <div id="minigame-screen" class="hidden">
+
         <div class="card">
-            <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰：Stopwatch 盲測</div>
-            <div class="instruction-box">
-                <b>💡 玩法說明：</b><br>
-                1. 按下 <b>START</b> 開始計時（畫面會隱藏秒數）。<br>
-                2. 在心裡默數，當你覺得時間達到目標秒數時，立即按下 <b>STOP</b>！
+
+            <div
+                style="font-size:14px; color:#7f8c8d; margin-bottom:5px;">
+                🎯 旅途挑戰：Stopwatch 盲測
             </div>
-            <div class="timer-box">目標：<span id="target-time">2.0</span> 秒</div>
-            <div id="timer-status" style="font-size: 18px; font-weight: bold; color: #e67e22; height: 35px; line-height:35px;">準備好了嗎？</div>
-            <div class="result-box hidden" id="game-result"></div>
-            
-            <div style="margin-top: 15px;">
-                <button id="btn-timer-start" class="btn-action" onclick="startTimer()">▶️ START（開始計時）</button>
-                <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">⏹️ STOP（按此停止！）</button>
-                <button id="btn-timer-next" class="btn-action hidden" onclick="completeMiniGame()">繼續旅程 ➔</button>
-                <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="retryMiniGame()">再試一次 (剩餘 1 次機會)</button>
-                <button id="btn-timer-newtarget" class="btn-opt hidden" style="width:100%; margin-top:8px; background:#e67e22;" onclick="setupNewTargetMiniGame()">重置新目標秒數</button>
+
+            <div
+                class="instruction-box">
+
+                <b>💡 玩法說明：</b>
+                <br>
+
+                1. 按下 <b>START</b>
+                開始計時（畫面會隱藏秒數）。
+                <br>
+
+                2. 在心裡默數，
+                當你覺得時間達到目標秒數時，
+                立即按下 <b>STOP</b>！
+
             </div>
+
+            <div class="timer-box">
+                目標：
+                <span id="target-time">2.0</span>
+                秒
+            </div>
+
+            <div
+                id="timer-status"
+                style="font-size:18px; font-weight:bold; color:#e67e22; height:35px; line-height:35px;">
+                準備好了嗎？
+            </div>
+
+            <div
+                class="result-box hidden"
+                id="game-result">
+            </div>
+
+            <div style="margin-top:15px;">
+
+                <button
+                    id="btn-timer-start"
+                    class="btn-action"
+                    onclick="startTimer()">
+                    ▶️ START（開始計時）
+                </button>
+
+                <button
+                    id="btn-timer-stop"
+                    class="btn-stop hidden"
+                    onclick="stopTimer()">
+                    ⏹️ STOP（按此停止！）
+                </button>
+
+                <button
+                    id="btn-timer-next"
+                    class="btn-action hidden"
+                    onclick="completeMiniGame()">
+                    繼續旅程 ➔
+                </button>
+
+                <button
+                    id="btn-timer-retry"
+                    class="btn-opt hidden"
+                    style="width:100%; margin-top:8px;"
+                    onclick="retryMiniGame()">
+                    再試一次
+                </button>
+
+                <button
+                    id="btn-timer-newtarget"
+                    class="btn-opt hidden"
+                    style="width:100%; margin-top:8px; background:#e67e22;"
+                    onclick="setupNewTargetMiniGame()">
+                    重置新目標秒數
+                </button>
+
+            </div>
+
         </div>
+
     </div>
 
-    <!-- 4. WINNING & SCOREBOARD SCREEN -->
+
+    <!-- =====================================================
+         4. WINNING & SCOREBOARD SCREEN
+         ===================================================== -->
+
     <div id="win-screen" class="hidden">
-        <div class="card" style="border-color: var(--success);">
-            <div class="loc-title" style="color: var(--success);" id="win-title">🎉 恭喜抵達西奈山！</div>
-            <div style="font-size: 16px; color: #333;" id="time-display-box">抵達時間戳記：<b id="completion-time" style="color:var(--danger); font-size:20px;">-</b></div>
-            
-            <div class="primary-warning-box" id="screenshot-notice">
-                <h3>⚠️ 勝出核實重要須知 ⚠️</h3>
-                <b>1. 📸 請即截圖此畫面</b>（需清晰顯示上方時間戳記）。<br>
-                <b>2. 🎟️ 拍下你的「遊戲券」實體相片。</b><br>
-                <b>3. 📲 將【完成畫面截圖 + 遊戲券相片】一併傳送到 WhatsApp 大會群組！</b><br><br>
-                <span style="font-size:12px; color:#666;">*下方排行榜僅供現場參考，大會將嚴格以 WhatsApp 群組收到訊息的時間及完整相片為最終得獎依據。</span>
+
+        <div
+            class="card"
+            style="border-color:var(--success);">
+
+            <div
+                class="loc-title"
+                style="color:var(--success);"
+                id="win-title">
+                🎉 恭喜抵達西奈山！
             </div>
 
-            <div id="name-input-section" style="margin-top: 15px;">
-                <p style="font-size: 14px; margin-bottom: 8px;">🏆 輸入名字登記現場參考排行榜：</p>
-                <input type="text" id="player-name" placeholder="輸入姓名 / 暱稱" maxlength="15">
-                <button class="btn-action" onclick="submitScore()">提交成績</button>
+            <div
+                style="font-size:16px; color:#333;"
+                id="time-display-box">
+
+                抵達時間戳記：
+                <b
+                    id="completion-time"
+                    style="color:var(--danger); font-size:20px;">
+                    -
+                </b>
+
             </div>
 
-            <div id="rank-result" class="hidden" style="margin: 15px 0; font-size: 18px; font-weight: bold; color: var(--accent);"></div>
+            <div
+                class="primary-warning-box"
+                id="screenshot-notice">
+
+                <h3>
+                    ⚠️ 勝出核實重要須知 ⚠️
+                </h3>
+
+                <b>1. 📸 請即截圖此畫面</b>
+                （需清晰顯示上方時間戳記）。
+                <br>
+
+                <b>2. 🎟️ 拍下你的「遊戲券」實體相片。</b>
+                <br>
+
+                <b>3. 📲 將【完成畫面截圖 + 遊戲券相片】一併傳送到 WhatsApp 大會群組！</b>
+
+                <br><br>
+
+                <span
+                    style="font-size:12px; color:#666;">
+                    *下方排行榜僅供現場參考，
+                    大會將嚴格以 WhatsApp 群組收到訊息的時間及完整相片為最終得獎依據。
+                </span>
+
+            </div>
+
+
+            <div
+                id="name-input-section"
+                style="margin-top:15px;">
+
+                <p
+                    style="font-size:14px; margin-bottom:8px;">
+                    🏆 輸入名字登記現場參考排行榜：
+                </p>
+
+                <input
+                    type="text"
+                    id="player-name"
+                    placeholder="輸入姓名 / 暱稱"
+                    maxlength="15">
+
+                <button
+                    class="btn-action"
+                    onclick="submitScore()">
+                    提交成績
+                </button>
+
+            </div>
+
+
+            <div
+                id="rank-result"
+                class="hidden"
+                style="margin:15px 0; font-size:18px; font-weight:bold; color:var(--accent);">
+            </div>
+
 
             <div class="scoreboard">
-                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">🏆 現場參考排行榜</div>
-                <div id="score-list">載入排行榜中...</div>
+
+                <div
+                    style="font-weight:bold; text-align:center; margin-bottom:8px;">
+                    🏆 現場參考排行榜
+                </div>
+
+                <div id="score-list">
+                    載入排行榜中...
+                </div>
+
             </div>
 
-            <div style="margin-top: 15px;">
-                <button class="btn-sec" onclick="goHome()">返回首頁</button>
-                <button class="btn-sec" style="background:#e74c3c; margin-top:8px;" onclick="clearScoreboard()">🧹 清空排行榜 (大會測試用)</button>
+
+            <div style="margin-top:15px;">
+
+                <button
+                    class="btn-sec"
+                    onclick="goHome()">
+                    返回首頁
+                </button>
+
+                <button
+                    class="btn-sec"
+                    style="background:#e74c3c; margin-top:8px;"
+                    onclick="clearScoreboard()">
+                    🧹 清空排行榜 (大會測試用)
+                </button>
+
             </div>
+
         </div>
+
     </div>
 
-    <!-- SECRET ACHIEVEMENT POPUP -->
-    <div id="achievement-modal" class="modal-overlay hidden">
+
+    <!-- =====================================================
+         SECRET ACHIEVEMENT
+         ===================================================== -->
+
+    <div
+        id="achievement-modal"
+        class="modal-overlay hidden">
+
         <div class="modal-card">
-            <div style="font-size:48px; margin-bottom:10px;">🏆</div>
-            <h2 style="color:var(--gold); margin:0 0 10px 0;">隱藏成就解鎖！</h2>
-            <h3 style="color:#333; margin:0 0 15px 0;">【 廣告大師 】</h3>
-            <p style="font-size:14px; color:#555; line-height:1.6;">
-                恭喜你！你在旅途中竟然觀看了 <b>15 次以上廣告</b>！讚賞你無限的忍耐力與堅忍精神！
-            </p>
-            <div style="background:#fff9e6; border:1px dashed var(--gold); padding:10px; border-radius:8px; font-size:13px; color:#b78103; margin-bottom:15px;">
-                <b>📸 請即截圖此畫面並傳送到 WhatsApp 群組，即可領取「忍耐大獎」特別禮物乙份！</b>
+
+            <div
+                style="font-size:48px; margin-bottom:10px;">
+                🏆
             </div>
-            <button class="btn-action" style="background:var(--gold); color:#000;" onclick="closeAchievementModal()">收下成就並繼續</button>
+
+            <h2
+                style="color:var(--gold); margin:0 0 10px 0;">
+                隱藏成就解鎖！
+            </h2>
+
+            <h3
+                style="color:#333; margin:0 0 15px 0;">
+                【 廣告大師 】
+            </h3>
+
+            <p
+                style="font-size:14px; color:#555; line-height:1.6;">
+
+                恭喜你！
+                你喺<b>同一次冒險 Run</b>內，
+                竟然觀看咗
+                <b>15 次廣告</b>！
+
+                <br><br>
+
+                讚賞你無限的忍耐力與堅忍精神！😂
+
+            </p>
+
+            <div
+                style="background:#fff9e6; border:1px dashed var(--gold); padding:10px; border-radius:8px; font-size:13px; color:#b78103; margin-bottom:15px;">
+
+                <b>
+                    📸 請即截圖此畫面並傳送到 WhatsApp 群組，
+                    即可領取「忍耐大獎」特別禮物乙份！
+                </b>
+
+            </div>
+
+            <button
+                class="btn-action"
+                style="background:var(--gold); color:#000;"
+                onclick="closeAchievementModal()">
+
+                收下成就並繼續
+
+            </button>
+
         </div>
+
     </div>
+
 </div>
 
+
 <script>
+
+/* =========================================================
+   FIREBASE
+   ========================================================= */
+
 const firebaseConfig = {
-    apiKey: "AIzaSyDw0-piD-5yKHtyC09Z6NCEdLnOY4RR5xk",
-    authDomain: "anniversary-388ed.firebaseapp.com",
-    databaseURL: "https://anniversary-388ed-default-rtdb.firebaseio.com",
-    projectId: "anniversary-388ed",
-    storageBucket: "anniversary-388ed.firebasestorage.app",
-    messagingSenderId: "372336604360",
-    appId: "1:372336604360:web:bcce8be5e2851ef8b3e1fd"
+
+    apiKey: "AIzaSyDw0-piD5yKHtyC09Z6NCEdLnOY4RR5xk",
+
+    authDomain:
+        "anniversary-388ed.firebaseapp.com",
+
+    databaseURL:
+        "https://anniversary-388ed-default-rtdb.firebaseio.com",
+
+    projectId:
+        "anniversary-388ed",
+
+    storageBucket:
+        "anniversary-388ed.firebasestorage.app",
+
+    messagingSenderId:
+        "372336604360",
+
+    appId:
+        "1:372336604360:web:bcce8be5e2851ef8b3e1fd"
 };
+
 
 let db = null;
+
 try {
+
     firebase.initializeApp(firebaseConfig);
+
     db = firebase.database();
+
 } catch (e) {
+
     console.warn("Firebase 本地模式。");
+
 }
+
+
+/* =========================================================
+   GAME DATA
+   ========================================================= */
 
 const nodesData = {
-    1: { name: "蘭塞", text: "大隊剛剛離開蘭塞。前面地勢平坦，但遠處幾條路開始分開。天色仲早，你哋準備向前行。", A: { txt: "沿住大隊留下嘅車轍繼續向前", next: 3 }, B: { txt: "見北面有水源，轉向水邊行", next: 2 } },
-    2: { name: "密奪", text: "你哋發現周圍開始見唔到大隊蹤影。遠處有煙，但方向唔太清楚。", A: { txt: "跟住遠處煙柱，向高地方向走", next: 4 }, B: { txt: "避開主路，沿石堆之間嘅小路走", next: 9 } },
-    3: { name: "疏割", text: "前面地勢開始開闊，風亦越來越大。你哋見到兩條可以繼續前進嘅路。", A: { txt: "沿住開闊地帶繼續向前", next: 5 }, B: { txt: "繞去遠處高地，睇清楚前面地形", next: 4 } },
-    4: { name: "巴力洗分", text: "周圍嘅地標開始變得模糊。前面一邊比較平坦，另一邊就有一條窄窄嘅路。", A: { txt: "沿較平坦嘅路繼續", next: 6 }, B: { txt: "轉入窄路，避開風吹得最勁嘅地方", next: 11 } },
-    5: { name: "以倘", text: "天開始轉暗。你哋聽到前方似乎有水聲，但另一邊亦見到一串新鮮腳印。", A: { txt: "跟住水聲方向前進", next: 7 }, B: { txt: "追蹤地上嘅腳印", next: 6 } },
-    6: { name: "海邊支線", text: "你哋行到一片較空曠嘅地方。前面似乎可以繼續沿海邊走，亦有腳印向內陸延伸。", A: { txt: "沿海邊尋找較易通過嘅位置", next: 7 }, B: { txt: "跟住內陸嘅腳印走", next: 9 } },
-    7: { name: "比哈希錄", text: "前面突然出現大片水域，隊伍亦開始聚集。另一邊有一條較窄嘅岩坡路。", A: { txt: "沿住人群留下嘅路向前", next: 10 }, B: { txt: "避開人群，轉入岩坡小路", next: 8 } },
-    8: { name: "以琳", text: "呢度突然出現樹木同水源，看起來比之前舒服好多。但前面有兩條路，一條向山谷，一條向較高地。", A: { txt: "沿住熟悉嘅路跡折返", next: 7 }, B: { txt: "跟另一隊人嘅腳印繼續向前", next: 11 } },
-    9: { name: "曠野路線", text: "你哋開始懷疑自己係咪行錯咗。附近有幾個石標，其中一個似乎係之前見過嘅。", A: { txt: "沿山腳繞行，尋找更多石標", next: 11 }, B: { txt: "轉返去之前見過嘅路口", next: 2 } },
-    10: { name: "紅海", text: "海水已經退開，但前面仍然係一片陌生地形。你哋要決定下一步點行。", A: { txt: "沿住較平坦嘅谷地繼續前進", next: 12 }, B: { txt: "跟住另一邊嘅足跡離開", next: 6 } },
-    11: { name: "曠野路線", text: "你哋又遇到熟悉嘅地形。風向變化令原本嘅路跡越來越難辨認。", A: { txt: "向低地行，尋找之前見過嘅路標", next: 9 }, B: { txt: "沿岩壁繞行，避開鬆散沙地", next: 4 } },
-    12: { name: "利非訂", text: "你哋終於行到一片比較穩定嘅山谷。遠方出現一座高大山峰。", A: { txt: "沿山谷向住高山方向前進", next: 13 }, B: { txt: "轉入另一條看似更近嘅山徑", next: 8 } },
-    13: { name: "西奈山", text: "你哋終於抵達西奈山。恭喜完成出埃及記冒險！🎉", end: true }
+
+    1: {
+        name: "蘭塞",
+        text:
+            "大隊剛剛離開蘭塞。前面地勢平坦，但遠處幾條路開始分開。天色仲早，你哋準備向前行。",
+        A: {
+            txt: "沿住大隊留下嘅車轍繼續向前",
+            next: 3
+        },
+        B: {
+            txt: "見北面有水源，轉向水邊行",
+            next: 2
+        }
+    },
+
+    2: {
+        name: "密奪",
+        text:
+            "你哋發現周圍開始見唔到大隊蹤影。遠處有煙，但方向唔太清楚。",
+        A: {
+            txt: "跟住遠處煙柱，向高地方向走",
+            next: 4
+        },
+        B: {
+            txt: "避開主路，沿石堆之間嘅小路走",
+            next: 9
+        }
+    },
+
+    3: {
+        name: "疏割",
+        text:
+            "前面地勢開始開闊，風亦越來越大。你哋見到兩條可以繼續前進嘅路。",
+        A: {
+            txt: "沿住開闊地帶繼續向前",
+            next: 5
+        },
+        B: {
+            txt: "繞去遠處高地，睇清楚前面地形",
+            next: 4
+        }
+    },
+
+    4: {
+        name: "巴力洗分",
+        text:
+            "周圍嘅地標開始變得模糊。前面一邊比較平坦，另一邊就有一條窄窄嘅路。",
+        A: {
+            txt: "沿較平坦嘅路繼續",
+            next: 6
+        },
+        B: {
+            txt: "轉入窄路，避開風吹得最勁嘅地方",
+            next: 11
+        }
+    },
+
+    5: {
+        name: "以倘",
+        text:
+            "天開始轉暗。你哋聽到前方似乎有水聲，但另一邊亦見到一串新鮮腳印。",
+        A: {
+            txt: "跟住水聲方向前進",
+            next: 7
+        },
+        B: {
+            txt: "追蹤地上嘅腳印",
+            next: 6
+        }
+    },
+
+    6: {
+        name: "海邊支線",
+        text:
+            "你哋行到一片較空曠嘅地方。前面似乎可以繼續沿海邊走，亦有腳印向內陸延伸。",
+        A: {
+            txt: "沿海邊尋找較易通過嘅位置",
+            next: 7
+        },
+        B: {
+            txt: "跟住內陸嘅腳印走",
+            next: 9
+        }
+    },
+
+    7: {
+        name: "比哈希錄",
+        text:
+            "前面突然出現大片水域，隊伍亦開始聚集。另一邊有一條較窄嘅岩坡路。",
+        A: {
+            txt: "沿住人群留下嘅路向前",
+            next: 10
+        },
+        B: {
+            txt: "避開人群，轉入岩坡小路",
+            next: 8
+        }
+    },
+
+    8: {
+        name: "以琳",
+        text:
+            "呢度突然出現樹木同水源，看起來比之前舒服好多。但前面有兩條路，一條向山谷，一條向較高地。",
+        A: {
+            txt: "沿住熟悉嘅路跡折返",
+            next: 7
+        },
+        B: {
+            txt: "跟另一隊人嘅腳印繼續向前",
+            next: 11
+        }
+    },
+
+    9: {
+        name: "曠野路線",
+        text:
+            "你哋開始懷疑自己係咪行錯咗。附近有幾個石標，其中一個似乎係之前見過嘅。",
+        A: {
+            txt: "沿山腳繞行，尋找更多石標",
+            next: 11
+        },
+        B: {
+            txt: "轉返去之前見過嘅路口",
+            next: 2
+        }
+    },
+
+    10: {
+        name: "紅海",
+        text:
+            "海水已經退開，但前面仍然係一片陌生地形。你哋要決定下一步點行。",
+        A: {
+            txt: "沿住較平坦嘅谷地繼續前進",
+            next: 12
+        },
+        B: {
+            txt: "跟住另一邊嘅足跡離開",
+            next: 6
+        }
+    },
+
+    11: {
+        name: "曠野路線",
+        text:
+            "你哋又遇到熟悉嘅地形。風向變化令原本嘅路跡越來越難辨認。",
+        A: {
+            txt: "向低地行，尋找之前見過嘅路標",
+            next: 9
+        },
+        B: {
+            txt: "沿岩壁繞行，避開鬆散沙地",
+            next: 4
+        }
+    },
+
+    12: {
+        name: "利非訂",
+        text:
+            "你哋終於行到一片比較穩定嘅山谷。遠方出現一座高大山峰。",
+        A: {
+            txt: "沿山谷向住高山方向前進",
+            next: 13
+        },
+        B: {
+            txt: "轉入另一條看似更近嘅山徑",
+            next: 8
+        }
+    },
+
+    13: {
+        name: "西奈山",
+        text:
+            "你哋終於抵達西奈山。恭喜完成出埃及記冒險！🎉",
+        end: true
+    }
+
 };
 
+
+/* =========================================================
+   CHURCH ADS
+   ========================================================= */
+
 const churchAds = [
+
     "<b>「今個主日記得準時返嚟聚會……」</b><br><br>等等，你而家咪已經喺聚餐囉！繼續食飯啦！",
+
     "<b>「曠野路途遙遠，請注意補充熱量！」</b><br><br>大會溫馨提示：記得食多幾口菜同肉呀！",
+
     "<b>「你以為選右邊就係屬靈正確？」</b><br><br>其實兩條路都係同一個設計師寫嘅，慢慢揀啦😏"
+
 ];
 
-const MAX_ADS_PER_RUN = 3;
+
+/* =========================================================
+   GAME STATE
+   ========================================================= */
+
+/*
+ * IMPORTANT:
+ *
+ * 15-ad achievement is PER RUN.
+ *
+ * Nothing related to this counter is stored
+ * in localStorage.
+ */
+
+const ACHIEVEMENT_AD_TARGET = 15;
 
 let currentNode = 1;
+
 let pendingNextNode = null;
+
 let timerTarget = 2.0;
+
 let timerAttemptCount = 0;
+
 let nodeVisitedCount = 0;
+
 let headerClickTracker = 0;
+
 let adTimerInterval = null;
+
 let adSecondsLeft = 15;
+
 let timerStartTime = 0;
+
+
+/* PER-RUN STATE */
+
 let runAdsViewed = 0;
-let totalAdsViewed = 0;
+
 let achievementUnlocked = false;
 
+let runActive = false;
+
+
+/* Achievement state */
+
+let achievementShowing = false;
+
+
+/* =========================================================
+   START NEW RUN
+   ========================================================= */
+
 function startGame() {
+
+    /*
+     * Pressing this button is the ONLY place where
+     * a new Run begins.
+     */
+
+    stopAdCountdown();
+
     currentNode = 1;
+
+    pendingNextNode = null;
+
     nodeVisitedCount = 0;
+
     runAdsViewed = 0;
-    document.getElementById('home-screen').classList.add('hidden');
+
+    achievementUnlocked = false;
+
+    achievementShowing = false;
+
+    runActive = true;
+
+
+    /*
+     * Reset achievement UI explicitly.
+     */
+
+    document
+        .getElementById('achievement-modal')
+        .classList.add('hidden');
+
+
+    /*
+     * Reset screens.
+     */
+
+    document
+        .getElementById('home-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('win-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('ad-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('minigame-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('location-screen')
+        .classList.remove('hidden');
+
+
+    updateRunAdCounter();
+
     renderLocation();
+
 }
+
+
+/* =========================================================
+   RETURN HOME
+   ========================================================= */
 
 function goHome() {
-    document.getElementById('win-screen').classList.add('hidden');
-    document.getElementById('home-screen').classList.remove('hidden');
+
+    stopAdCountdown();
+
+    runActive = false;
+
+    achievementShowing = false;
+
+    document
+        .getElementById('achievement-modal')
+        .classList.add('hidden');
+
+    document
+        .getElementById('win-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('location-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('minigame-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('ad-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('home-screen')
+        .classList.remove('hidden');
+
 }
 
-function showScoreboardFromHome() {
-    document.getElementById('home-screen').classList.add('hidden');
-    document.getElementById('win-title').innerText = "🏆 現場參考排行榜";
-    document.getElementById('time-display-box').classList.add('hidden');
-    document.getElementById('name-input-section').classList.add('hidden');
-    document.getElementById('screenshot-notice').classList.add('hidden');
-    document.getElementById('win-screen').classList.remove('hidden');
-    listenToScoreboard();
-}
+
+/* =========================================================
+   LOCATION
+   ========================================================= */
 
 function renderLocation() {
-    const node = nodesData[currentNode];
-    if (node.end) {
-        showWinScreen();
+
+    if (!runActive) {
         return;
     }
+
+    const node = nodesData[currentNode];
+
+    if (!node) {
+        return;
+    }
+
+    if (node.end) {
+
+        showWinScreen();
+
+        return;
+    }
+
     nodeVisitedCount++;
-    document.getElementById('loc-name').innerText = "📍 " + node.name;
-    document.getElementById('scenario-text').innerText = node.text;
 
-    const choices = [{ key: 'A', data: node.A }, { key: 'B', data: node.B }];
-    if (Math.random() < 0.5) choices.reverse();
 
-    const choiceBox = document.getElementById('choice-buttons');
+    document
+        .getElementById('loc-name')
+        .innerText =
+            "📍 " + node.name;
+
+
+    document
+        .getElementById('scenario-text')
+        .innerText =
+            node.text;
+
+
+    const choices = [
+
+        {
+            key: 'A',
+            data: node.A
+        },
+
+        {
+            key: 'B',
+            data: node.B
+        }
+
+    ];
+
+
+    /*
+     * Randomise physical A/B button position.
+     */
+
+    if (Math.random() < 0.5) {
+        choices.reverse();
+    }
+
+
+    const choiceBox =
+        document.getElementById('choice-buttons');
+
+
     choiceBox.innerHTML = `
-        <button class="btn-opt" onclick="selectChoice(${choices[0].data.next})">${choices[0].data.txt}</button>
-        <button class="btn-opt" onclick="selectChoice(${choices[1].data.next})">${choices[1].data.txt}</button>
+
+        <button
+            class="btn-opt"
+            onclick="selectChoice(${choices[0].data.next})">
+
+            ${choices[0].data.txt}
+
+        </button>
+
+        <button
+            class="btn-opt"
+            onclick="selectChoice(${choices[1].data.next})">
+
+            ${choices[1].data.txt}
+
+        </button>
+
     `;
 
-    document.getElementById('location-screen').classList.remove('hidden');
-    document.getElementById('minigame-screen').classList.add('hidden');
-    document.getElementById('ad-screen').classList.add('hidden');
+
+    document
+        .getElementById('location-screen')
+        .classList.remove('hidden');
+
+    document
+        .getElementById('minigame-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('ad-screen')
+        .classList.add('hidden');
+
 }
+
+
+/* =========================================================
+   ROUTE CHOICE
+   ========================================================= */
 
 function selectChoice(nextNodeId) {
-    pendingNextNode = nextNodeId;
-    if (nodeVisitedCount > 2 && runAdsViewed < MAX_ADS_PER_RUN && Math.random() < 0.35) {
-        triggerChurchAdScreen();
-    } else {
-        setupNewTargetMiniGame();
+
+    if (!runActive || achievementShowing) {
+        return;
     }
+
+    pendingNextNode = nextNodeId;
+
+
+    /*
+     * Church ad has a 35% chance after the first few
+     * locations.
+     *
+     * There is NO 3-ad maximum anymore.
+     *
+     * The 15-ad counter is only an Achievement target.
+     */
+
+    if (
+        nodeVisitedCount > 2 &&
+        Math.random() < 0.35
+    ) {
+
+        triggerChurchAdScreen();
+
+    } else {
+
+        setupNewTargetMiniGame();
+
+    }
+
 }
+
+
+/* =========================================================
+   CHURCH AD
+   ========================================================= */
 
 function triggerChurchAdScreen() {
-    runAdsViewed++;
-    totalAdsViewed++;
-    document.getElementById('location-screen').classList.add('hidden');
-    document.getElementById('minigame-screen').classList.add('hidden');
-    document.getElementById('ad-screen').classList.remove('hidden');
 
-    const randomAd = churchAds[Math.floor(Math.random() * churchAds.length)];
-    document.getElementById('ad-text').innerHTML = randomAd;
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+
+    /*
+     * ONE successful ad screen = ONE ad viewed.
+     *
+     * This counter belongs only to the current Run.
+     */
+
+    runAdsViewed++;
+
+
+    updateRunAdCounter();
+
+
+    /*
+     * Switch to ad screen.
+     */
+
+    document
+        .getElementById('location-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('minigame-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('ad-screen')
+        .classList.remove('hidden');
+
+
+    /*
+     * Random advertisement.
+     */
+
+    const randomAd =
+        churchAds[
+            Math.floor(
+                Math.random() * churchAds.length
+            )
+        ];
+
+
+    document
+        .getElementById('ad-text')
+        .innerHTML = randomAd;
+
+
+    /*
+     * Reset 15-second ad timer.
+     */
 
     adSecondsLeft = 15;
-    document.getElementById('ad-seconds').innerText = adSecondsLeft;
-    document.getElementById('btn-skip-ad').classList.add('hidden');
-    document.getElementById('ad-countdown-text').classList.remove('hidden');
 
-    if (adTimerInterval) clearInterval(adTimerInterval);
+    document
+        .getElementById('ad-seconds')
+        .innerText = adSecondsLeft;
+
+
+    document
+        .getElementById('btn-skip-ad')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('ad-countdown-text')
+        .classList.remove('hidden');
+
+
+    stopAdCountdown();
+
+
     adTimerInterval = setInterval(() => {
-        adSecondsLeft--;
-        document.getElementById('ad-seconds').innerText = adSecondsLeft;
-        if (adSecondsLeft <= 0) {
-            clearInterval(adTimerInterval);
-            document.getElementById('ad-countdown-text').classList.add('hidden');
-            document.getElementById('btn-skip-ad').classList.remove('hidden');
+
+        /*
+         * Achievement overlay can pause this interval.
+         */
+
+        if (achievementShowing) {
+            return;
         }
+
+
+        adSecondsLeft--;
+
+
+        document
+            .getElementById('ad-seconds')
+            .innerText =
+                Math.max(0, adSecondsLeft);
+
+
+        if (adSecondsLeft <= 0) {
+
+            stopAdCountdown();
+
+
+            document
+                .getElementById('ad-countdown-text')
+                .classList.add('hidden');
+
+
+            document
+                .getElementById('btn-skip-ad')
+                .classList.remove('hidden');
+
+        }
+
     }, 1000);
 
-    // Check Easter Egg Achievement trigger
-    if (totalAdsViewed >= 15 && !achievementUnlocked) {
+
+    /*
+     * Achievement check:
+     *
+     * ONLY the current Run counter is used.
+     *
+     * No localStorage.
+     * No totalAdsViewed.
+     */
+
+    if (
+        runAdsViewed === ACHIEVEMENT_AD_TARGET &&
+        !achievementUnlocked
+    ) {
+
         achievementUnlocked = true;
-        setTimeout(() => {
-            document.getElementById('achievement-modal').classList.remove('hidden');
-        }, 800);
+
+        /*
+         * Show immediately.
+         *
+         * No setTimeout.
+         */
+
+        showAchievement();
+
     }
+
 }
+
+
+/* =========================================================
+   STOP AD COUNTDOWN
+   ========================================================= */
+
+function stopAdCountdown() {
+
+    if (adTimerInterval !== null) {
+
+        clearInterval(adTimerInterval);
+
+        adTimerInterval = null;
+
+    }
+
+}
+
+
+/* =========================================================
+   ACHIEVEMENT
+   ========================================================= */
+
+function showAchievement() {
+
+    if (!runActive) {
+        return;
+    }
+
+    achievementShowing = true;
+
+
+    /*
+     * Freeze the advertisement countdown.
+     */
+
+    stopAdCountdown();
+
+
+    /*
+     * Keep the player on the current ad screen.
+     * Do NOT change:
+     *
+     * currentNode
+     * pendingNextNode
+     * runAdsViewed
+     */
+
+    document
+        .getElementById('achievement-modal')
+        .classList.remove('hidden');
+
+}
+
+
+/* =========================================================
+   CLOSE ACHIEVEMENT
+   ========================================================= */
 
 function closeAchievementModal() {
-    document.getElementById('achievement-modal').classList.add('hidden');
+
+    /*
+     * Only close the Achievement.
+     *
+     * Nothing else is reset.
+     */
+
+    document
+        .getElementById('achievement-modal')
+        .classList.add('hidden');
+
+
+    achievementShowing = false;
+
+
+    /*
+     * Resume the ad screen exactly where it was.
+     *
+     * If the 15th ad had not finished its countdown,
+     * continue the countdown.
+     *
+     * If it had already finished, show the continue button.
+     */
+
+    if (
+        document
+            .getElementById('ad-screen')
+            .classList.contains('hidden')
+    ) {
+
+        return;
+
+    }
+
+
+    if (adSecondsLeft <= 0) {
+
+        document
+            .getElementById('ad-countdown-text')
+            .classList.add('hidden');
+
+        document
+            .getElementById('btn-skip-ad')
+            .classList.remove('hidden');
+
+    } else {
+
+        document
+            .getElementById('ad-countdown-text')
+            .classList.remove('hidden');
+
+        document
+            .getElementById('btn-skip-ad')
+            .classList.add('hidden');
+
+
+        adTimerInterval = setInterval(() => {
+
+            if (achievementShowing) {
+                return;
+            }
+
+            adSecondsLeft--;
+
+            document
+                .getElementById('ad-seconds')
+                .innerText =
+                    Math.max(0, adSecondsLeft);
+
+
+            if (adSecondsLeft <= 0) {
+
+                stopAdCountdown();
+
+                document
+                    .getElementById('ad-countdown-text')
+                    .classList.add('hidden');
+
+                document
+                    .getElementById('btn-skip-ad')
+                    .classList.remove('hidden');
+
+            }
+
+        }, 1000);
+
+    }
+
 }
+
+
+/* =========================================================
+   UPDATE PER-RUN AD COUNTER
+   ========================================================= */
+
+function updateRunAdCounter() {
+
+    const counter =
+        document.getElementById('run-ad-count');
+
+    if (counter) {
+
+        counter.innerText =
+            runAdsViewed;
+
+    }
+
+}
+
+
+/* =========================================================
+   COMPLETE AD
+   ========================================================= */
 
 function completeAdScreen() {
+
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+
+    stopAdCountdown();
+
+
     setupNewTargetMiniGame();
+
 }
+
+
+/* =========================================================
+   MINI GAME
+   ========================================================= */
 
 function setupNewTargetMiniGame() {
-    timerTarget = (Math.floor(Math.random() * 24) + 12) / 10;
+
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+
+    /*
+     * Random target between 1.2 and 3.5 seconds.
+     */
+
+    timerTarget =
+        (Math.floor(Math.random() * 24) + 12) / 10;
+
+
     timerAttemptCount = 0;
+
+
     resetMiniGameUI();
+
 }
+
+
+/* =========================================================
+   RESET MINI GAME UI
+   ========================================================= */
 
 function resetMiniGameUI() {
-    document.getElementById('target-time').innerText = timerTarget.toFixed(1);
-    document.getElementById('timer-status').innerText = "按下 START 開始計時！";
-    document.getElementById('timer-status').style.color = "#e67e22";
-    document.getElementById('game-result').classList.add('hidden');
-    document.getElementById('btn-timer-start').classList.remove('hidden');
-    document.getElementById('btn-timer-stop').classList.add('hidden');
-    document.getElementById('btn-timer-next').classList.add('hidden');
-    document.getElementById('btn-timer-retry').classList.add('hidden');
-    document.getElementById('btn-timer-newtarget').classList.add('hidden');
 
-    document.getElementById('location-screen').classList.add('hidden');
-    document.getElementById('ad-screen').classList.add('hidden');
-    document.getElementById('minigame-screen').classList.remove('hidden');
+    document
+        .getElementById('target-time')
+        .innerText =
+            timerTarget.toFixed(1);
+
+
+    document
+        .getElementById('timer-status')
+        .innerText =
+            "按下 START 開始計時！";
+
+
+    document
+        .getElementById('timer-status')
+        .style.color =
+            "#e67e22";
+
+
+    document
+        .getElementById('game-result')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('btn-timer-start')
+        .classList.remove('hidden');
+
+    document
+        .getElementById('btn-timer-stop')
+        .classList.add('hidden');
+
+    document
+        .getElementById('btn-timer-next')
+        .classList.add('hidden');
+
+    document
+        .getElementById('btn-timer-retry')
+        .classList.add('hidden');
+
+    document
+        .getElementById('btn-timer-newtarget')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('location-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('ad-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('minigame-screen')
+        .classList.remove('hidden');
+
 }
+
+
+/* =========================================================
+   START TIMER
+   ========================================================= */
 
 function startTimer() {
+
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+
     timerStartTime = Date.now();
-    document.getElementById('btn-timer-start').classList.add('hidden');
-    document.getElementById('btn-timer-stop').classList.remove('hidden');
-    document.getElementById('timer-status').innerHTML = "⏱️ 計時中（已隱藏秒數）<br><span style='font-size:14px; font-weight:normal; color:#e74c3c;'>請在心裡默數，到達時按下面的紅色 STOP！</span>";
-    document.getElementById('timer-status').style.color = "#27ae60";
+
+
+    document
+        .getElementById('btn-timer-start')
+        .classList.add('hidden');
+
+    document
+        .getElementById('btn-timer-stop')
+        .classList.remove('hidden');
+
+
+    document
+        .getElementById('timer-status')
+        .innerHTML =
+            "⏱️ 計時中（已隱藏秒數）<br>" +
+            "<span style='font-size:14px; font-weight:normal; color:#e74c3c;'>" +
+            "請在心裡默數，到達時按下面的紅色 STOP！" +
+            "</span>";
+
+
+    document
+        .getElementById('timer-status')
+        .style.color =
+            "#27ae60";
+
 }
+
+
+/* =========================================================
+   STOP TIMER
+   ========================================================= */
 
 function stopTimer() {
-    const elapsedTime = (Date.now() - timerStartTime) / 1000;
-    timerAttemptCount++;
-    document.getElementById('btn-timer-stop').classList.add('hidden');
 
-    const diff = Math.abs(elapsedTime - timerTarget);
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+
+    const elapsedTime =
+        (Date.now() - timerStartTime) / 1000;
+
+
+    timerAttemptCount++;
+
+
+    document
+        .getElementById('btn-timer-stop')
+        .classList.add('hidden');
+
+
+    const diff =
+        Math.abs(
+            elapsedTime - timerTarget
+        );
+
+
+    /*
+     * Current tolerance retained at 0.35
+     * for testing.
+     */
+
     const tolerance = 0.35;
-    const resultBox = document.getElementById('game-result');
+
+
+    const resultBox =
+        document.getElementById('game-result');
+
+
     resultBox.classList.remove('hidden');
 
+
     if (diff <= tolerance) {
-        document.getElementById('timer-status').innerText = "✓ 挑戰成功！";
-        document.getElementById('timer-status').style.color = "#27ae60";
-        resultBox.innerHTML = `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>誤差：<b>${diff.toFixed(2)}</b> 秒 (合格範疇)`;
-        document.getElementById('btn-timer-next').classList.remove('hidden');
+
+        document
+            .getElementById('timer-status')
+            .innerText =
+                "✓ 挑戰成功！";
+
+
+        document
+            .getElementById('timer-status')
+            .style.color =
+                "#27ae60";
+
+
+        resultBox.innerHTML =
+            `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>` +
+            `誤差：<b>${diff.toFixed(2)}</b> 秒 (合格範疇)`;
+
+
+        document
+            .getElementById('btn-timer-next')
+            .classList.remove('hidden');
+
     } else {
-        document.getElementById('timer-status').innerText = "❌ 差距太遠！";
-        document.getElementById('timer-status').style.color = "#e74c3c";
-        resultBox.innerHTML = `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>誤差：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
+
+        document
+            .getElementById('timer-status')
+            .innerText =
+                "❌ 差距太遠！";
+
+
+        document
+            .getElementById('timer-status')
+            .style.color =
+                "#e74c3c";
+
+
+        resultBox.innerHTML =
+            `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>` +
+            `誤差：<b>${diff.toFixed(2)}</b> 秒 ` +
+            `(需 ≤ ${tolerance}s)`;
+
+
         if (timerAttemptCount < 2) {
-            document.getElementById('btn-timer-retry').innerText = "再試一次 (剩餘 1 次機會)";
-            document.getElementById('btn-timer-retry').classList.remove('hidden');
+
+            document
+                .getElementById('btn-timer-retry')
+                .innerText =
+                    "再試一次 (剩餘 1 次機會)";
+
+
+            document
+                .getElementById('btn-timer-retry')
+                .classList.remove('hidden');
+
         } else {
-            document.getElementById('btn-timer-newtarget').classList.remove('hidden');
+
+            document
+                .getElementById('btn-timer-newtarget')
+                .classList.remove('hidden');
+
         }
+
     }
+
 }
 
-function retryMiniGame() { resetMiniGameUI(); }
-function completeMiniGame() { currentNode = pendingNextNode; renderLocation(); }
+
+/* =========================================================
+   RETRY
+   ========================================================= */
+
+function retryMiniGame() {
+
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+    resetMiniGameUI();
+
+}
+
+
+/* =========================================================
+   COMPLETE MINI GAME
+   ========================================================= */
+
+function completeMiniGame() {
+
+    if (!runActive || achievementShowing) {
+        return;
+    }
+
+
+    if (pendingNextNode === null) {
+        return;
+    }
+
+
+    currentNode =
+        pendingNextNode;
+
+
+    pendingNextNode = null;
+
+
+    renderLocation();
+
+}
+
+
+/* =========================================================
+   WIN SCREEN
+   ========================================================= */
 
 function showWinScreen() {
-    document.getElementById('home-screen').classList.add('hidden');
-    document.getElementById('location-screen').classList.add('hidden');
-    document.getElementById('minigame-screen').classList.add('hidden');
-    document.getElementById('ad-screen').classList.add('hidden');
-    
-    document.getElementById('win-title').innerText = "🎉 恭喜抵達西奈山！";
-    document.getElementById('time-display-box').classList.remove('hidden');
-    document.getElementById('screenshot-notice').classList.remove('hidden');
-    document.getElementById('win-screen').classList.remove('hidden');
 
-    let storedTime = localStorage.getItem('exodus_completion_time');
+    stopAdCountdown();
+
+
+    runActive = false;
+
+
+    document
+        .getElementById('home-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('location-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('minigame-screen')
+        .classList.add('hidden');
+
+    document
+        .getElementById('ad-screen')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('win-title')
+        .innerText =
+            "🎉 恭喜抵達西奈山！";
+
+
+    document
+        .getElementById('time-display-box')
+        .classList.remove('hidden');
+
+
+    document
+        .getElementById('screenshot-notice')
+        .classList.remove('hidden');
+
+
+    document
+        .getElementById('win-screen')
+        .classList.remove('hidden');
+
+
+    let storedTime =
+        localStorage.getItem(
+            'exodus_completion_time'
+        );
+
+
     if (!storedTime) {
-        const now = new Date();
-        storedTime = now.toTimeString().split(' ')[0];
-        localStorage.setItem('exodus_completion_time', storedTime);
-        localStorage.setItem('exodus_timestamp_raw', now.getTime());
-    }
-    document.getElementById('completion-time').innerText = storedTime;
 
-    if (!localStorage.getItem('exodus_player_name')) {
-        document.getElementById('name-input-section').classList.remove('hidden');
-    } else {
-        document.getElementById('name-input-section').classList.add('hidden');
+        const now = new Date();
+
+        storedTime =
+            now.toTimeString().split(' ')[0];
+
+
+        localStorage.setItem(
+            'exodus_completion_time',
+            storedTime
+        );
+
+        localStorage.setItem(
+            'exodus_timestamp_raw',
+            now.getTime()
+        );
+
     }
+
+
+    document
+        .getElementById('completion-time')
+        .innerText =
+            storedTime;
+
+
+    if (
+        !localStorage.getItem(
+            'exodus_player_name'
+        )
+    ) {
+
+        document
+            .getElementById('name-input-section')
+            .classList.remove('hidden');
+
+    } else {
+
+        document
+            .getElementById('name-input-section')
+            .classList.add('hidden');
+
+    }
+
 
     listenToScoreboard();
+
 }
+
+
+/* =========================================================
+   SCOREBOARD FROM HOME
+   ========================================================= */
+
+function showScoreboardFromHome() {
+
+    document
+        .getElementById('home-screen')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('win-title')
+        .innerText =
+            "🏆 現場參考排行榜";
+
+
+    document
+        .getElementById('time-display-box')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('name-input-section')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('screenshot-notice')
+        .classList.add('hidden');
+
+
+    document
+        .getElementById('win-screen')
+        .classList.remove('hidden');
+
+
+    listenToScoreboard();
+
+}
+
+
+/* =========================================================
+   SUBMIT SCORE
+   ========================================================= */
 
 function submitScore() {
-    const nameInput = document.getElementById('player-name').value.trim();
+
+    const nameInput =
+        document
+            .getElementById('player-name')
+            .value
+            .trim();
+
+
     if (!nameInput) {
-        alert("請輸入姓名或暱稱！");
+
+        alert(
+            "請輸入姓名或暱稱！"
+        );
+
         return;
     }
 
-    const timeStr = localStorage.getItem('exodus_completion_time');
-    const rawTime = localStorage.getItem('exodus_timestamp_raw') || Date.now();
 
-    localStorage.setItem('exodus_player_name', nameInput);
-    document.getElementById('name-input-section').classList.add('hidden');
+    const timeStr =
+        localStorage.getItem(
+            'exodus_completion_time'
+        );
+
+
+    const rawTime =
+        localStorage.getItem(
+            'exodus_timestamp_raw'
+        ) || Date.now();
+
+
+    localStorage.setItem(
+        'exodus_player_name',
+        nameInput
+    );
+
+
+    document
+        .getElementById('name-input-section')
+        .classList.add('hidden');
+
 
     if (db) {
-        db.ref('scores/' + nameInput.replace(/[\.\#\$\[\]]/g, "_")).set({
+
+        db.ref(
+            'scores/' +
+            nameInput.replace(
+                /[\.\#\$\[\]]/g,
+                "_"
+            )
+        ).set({
+
             name: nameInput,
+
             time: timeStr,
+
             raw: parseInt(rawTime)
+
         });
+
     } else {
-        let scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
-        scores = scores.filter(s => s.name !== nameInput);
-        scores.push({ name: nameInput, time: timeStr, raw: parseInt(rawTime) });
-        scores.sort((a, b) => a.raw - b.raw);
-        localStorage.setItem('exodus_scores', JSON.stringify(scores));
+
+        let scores =
+            JSON.parse(
+                localStorage.getItem(
+                    'exodus_scores'
+                ) || "[]"
+            );
+
+
+        scores =
+            scores.filter(
+                s => s.name !== nameInput
+            );
+
+
+        scores.push({
+
+            name: nameInput,
+
+            time: timeStr,
+
+            raw: parseInt(rawTime)
+
+        });
+
+
+        scores.sort(
+            (a,b) => a.raw - b.raw
+        );
+
+
+        localStorage.setItem(
+            'exodus_scores',
+            JSON.stringify(scores)
+        );
+
+
         renderScoreList(scores);
+
     }
+
 }
+
+
+/* =========================================================
+   SCOREBOARD
+   ========================================================= */
 
 function listenToScoreboard() {
+
     if (db) {
-        db.ref('scores').orderByChild('raw').on('value', (snapshot) => {
-            const scores = [];
-            snapshot.forEach((childSnapshot) => {
-                scores.push(childSnapshot.val());
-            });
-            renderScoreList(scores);
-        }, (error) => {
-            document.getElementById('score-list').innerHTML = `<div style="text-align:center; color:#e74c3c; padding:8px;">未開通 Realtime Database</div>`;
-        });
+
+        db.ref('scores')
+            .orderByChild('raw')
+            .on(
+                'value',
+                (snapshot) => {
+
+                    const scores = [];
+
+                    snapshot.forEach(
+                        (childSnapshot) => {
+
+                            scores.push(
+                                childSnapshot.val()
+                            );
+
+                        }
+                    );
+
+                    renderScoreList(scores);
+
+                },
+
+                (error) => {
+
+                    document
+                        .getElementById('score-list')
+                        .innerHTML =
+                            `<div style="text-align:center; color:#e74c3c; padding:8px;">
+                                未開通 Realtime Database
+                             </div>`;
+
+                }
+            );
+
     } else {
-        const scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
+
+        const scores =
+            JSON.parse(
+                localStorage.getItem(
+                    'exodus_scores'
+                ) || "[]"
+            );
+
+
         renderScoreList(scores);
+
     }
+
 }
+
+
+/* =========================================================
+   RENDER SCORE LIST
+   ========================================================= */
 
 function renderScoreList(scores) {
-    const currentName = localStorage.getItem('exodus_player_name');
-    const scoreList = document.getElementById('score-list');
+
+    const currentName =
+        localStorage.getItem(
+            'exodus_player_name'
+        );
+
+
+    const scoreList =
+        document.getElementById(
+            'score-list'
+        );
+
+
     scoreList.innerHTML = "";
 
-    if (!scores || scores.length === 0) {
-        scoreList.innerHTML = `<div style="text-align:center; color:#888; padding:8px;">暫無紀錄</div>`;
+
+    if (
+        !scores ||
+        scores.length === 0
+    ) {
+
+        scoreList.innerHTML =
+            `<div style="text-align:center; color:#888; padding:8px;">
+                暫無紀錄
+             </div>`;
+
         return;
+
     }
+
 
     let userRank = -1;
-    scores.forEach((item, index) => {
-        const rank = index + 1;
-        let medal = `${rank}.`;
-        if (rank === 1) medal = "🥇 1.";
-        else if (rank === 2) medal = "🥈 2.";
-        else if (rank === 3) medal = "🥉 3.";
 
-        if (item.name === currentName) userRank = rank;
 
-        scoreList.innerHTML += `
-            <div class="score-item" style="${item.name === currentName ? 'font-weight:bold; color:var(--accent);' : ''}">
-                <span>${medal} ${escapeHtml(item.name)}</span>
-                <span>${item.time}</span>
-            </div>
-        `;
-    });
+    scores.forEach(
+        (item, index) => {
 
-    if (userRank > 0 && currentName) {
-        const rankDisplay = document.getElementById('rank-result');
-        rankDisplay.classList.remove('hidden');
-        rankDisplay.innerText = `🏆 你係今場第 ${userRank} 位完成者！`;
+            const rank =
+                index + 1;
+
+
+            let medal =
+                `${rank}.`;
+
+
+            if (rank === 1) {
+
+                medal = "🥇 1.";
+
+            } else if (rank === 2) {
+
+                medal = "🥈 2.";
+
+            } else if (rank === 3) {
+
+                medal = "🥉 3.";
+
+            }
+
+
+            if (
+                item.name === currentName
+            ) {
+
+                userRank = rank;
+
+            }
+
+
+            scoreList.innerHTML += `
+
+                <div
+                    class="score-item"
+                    style="${
+                        item.name === currentName
+                        ? 'font-weight:bold; color:var(--accent);'
+                        : ''
+                    }">
+
+                    <span>
+                        ${medal}
+                        ${escapeHtml(item.name)}
+                    </span>
+
+                    <span>
+                        ${item.time}
+                    </span>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    if (
+        userRank > 0 &&
+        currentName
+    ) {
+
+        const rankDisplay =
+            document.getElementById(
+                'rank-result'
+            );
+
+
+        rankDisplay
+            .classList
+            .remove('hidden');
+
+
+        rankDisplay.innerText =
+            `🏆 你係今場第 ${userRank} 位完成者！`;
+
     }
+
 }
+
+
+/* =========================================================
+   CLEAR SCOREBOARD
+   ========================================================= */
 
 function clearScoreboard() {
-    if (confirm("確定要清空排行榜嗎？")) {
-        if (db) db.ref('scores').remove();
+
+    if (
+        confirm(
+            "確定要清空排行榜嗎？"
+        )
+    ) {
+
+        if (db) {
+
+            db.ref('scores').remove();
+
+        }
+
+
         localStorage.clear();
-        alert("排行榜已清空！");
+
+
+        alert(
+            "排行榜已清空！"
+        );
+
+
         location.reload();
+
     }
+
 }
 
-// Admin Speedrun / Fast Check: Click Header 3 Times to instant win, 5 times to clear board
+
+/* =========================================================
+   ADMIN SPEEDRUN
+   ========================================================= */
+
 function adminHeaderClick() {
+
     headerClickTracker++;
-    if (headerClickTracker === 3) {
-        alert("⚡ 管理員快速通關：即時跳至完成頁面！");
+
+
+    if (
+        headerClickTracker === 3
+    ) {
+
+        alert(
+            "⚡ 管理員快速通關：即時跳至完成頁面！"
+        );
+
+
+        /*
+         * Admin shortcut starts only if needed.
+         */
+
+        if (!runActive) {
+
+            runActive = true;
+
+        }
+
+
         showWinScreen();
-    } else if (headerClickTracker >= 5) {
+
+
+    } else if (
+        headerClickTracker >= 5
+    ) {
+
         headerClickTracker = 0;
+
         clearScoreboard();
+
     }
+
 }
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
 
 function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, function(m) {
-        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
-    });
+
+    return text.replace(
+        /[&<>"']/g,
+        function(m) {
+
+            return {
+
+                '&': '&amp;',
+
+                '<': '&lt;',
+
+                '>': '&gt;',
+
+                '"': '&quot;',
+
+                "'": '&#039;'
+
+            }[m];
+
+        }
+    );
+
 }
+
+
+/* =========================================================
+   INITIAL PAGE STATE
+   ========================================================= */
+
+/*
+ * VERY IMPORTANT:
+ *
+ * Page load NEVER starts a Run.
+ *
+ * Page load NEVER checks Achievement.
+ *
+ * Page load NEVER reads an ad counter.
+ *
+ * Player MUST press "開始冒險".
+ */
+
+runActive = false;
+
+runAdsViewed = 0;
+
+achievementUnlocked = false;
+
+achievementShowing = false;
+
+stopAdCountdown();
+
+
+document
+    .getElementById('home-screen')
+    .classList.remove('hidden');
+
+document
+    .getElementById('location-screen')
+    .classList.add('hidden');
+
+document
+    .getElementById('ad-screen')
+    .classList.add('hidden');
+
+document
+    .getElementById('minigame-screen')
+    .classList.add('hidden');
+
+document
+    .getElementById('win-screen')
+    .classList.add('hidden');
+
+document
+    .getElementById('achievement-modal')
+    .classList.add('hidden');
+
 </script>
 
 </body>
 </html>
+```
