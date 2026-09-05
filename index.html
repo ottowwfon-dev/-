@@ -15,32 +15,20 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg);
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 98vh;
-            box-sizing: border-box;
+            margin: 0; padding: 15px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 98vh; box-sizing: border-box;
         }
         .game-container {
-            width: 100%;
-            max-width: 450px;
-            background: var(--card-bg);
-            border-radius: 16px;
+            width: 100%; max-width: 450px;
+            background: var(--card-bg); border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-            padding: 20px;
-            box-sizing: border-box;
-            position: relative;
+            padding: 20px; box-sizing: border-box; position: relative;
         }
         h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
         .card {
-            border: 2px solid var(--primary);
-            border-radius: 12px;
-            padding: 18px;
-            text-align: center;
-            background: #fff;
-            margin-bottom: 15px;
+            border: 2px solid var(--primary); border-radius: 12px;
+            padding: 18px; text-align: center; background: #fff; margin-bottom: 15px;
         }
         .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 12px; }
         .scenario { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 20px; text-align: left; }
@@ -53,16 +41,15 @@
         .btn-opt:nth-child(even) { background-color: #e67e22; }
         .btn-action { background-color: var(--success); color: white; width: 100%; font-size: 18px; }
         .btn-stop { background-color: #e74c3c; color: white; width: 100%; font-size: 18px; }
+        .btn-sec { background-color: #7f8c8d; color: white; width: 100%; font-size: 14px; padding: 10px; }
         button:active { transform: scale(0.97); opacity: 0.9; }
         
-        /* Mini-game styles */
         .timer-box {
             font-size: 36px; font-weight: bold; color: var(--primary);
             margin: 20px 0; padding: 20px; background: #f0f3f4; border-radius: 10px;
         }
         .result-box { margin: 15px 0; font-size: 16px; line-height: 1.5; }
         
-        /* Leaderboard styles */
         input[type="text"] {
             width: 100%; padding: 12px; font-size: 16px; border-radius: 8px;
             border: 1px solid #ccc; margin-bottom: 12px; box-sizing: border-box; text-align: center;
@@ -80,16 +67,39 @@
             background: #fff3cd; color: #856404; padding: 12px;
             border-radius: 8px; margin-top: 15px; font-size: 13px; text-align: left;
         }
+        .ad-box {
+            background: #e8f4f8; border: 1px dashed #3498db;
+            padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; color: #2c3e50; text-align: left;
+        }
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>⛪ 聖經尋寶大冒險 - 出埃及記</h1>
+    <h1 onclick="adminResetCheck()">⛪ 聖經尋寶大冒險</h1>
+
+    <!-- 0. HOMEPAGE / INSTRUCTION SCREEN -->
+    <div id="home-screen">
+        <div class="card">
+            <div class="loc-title">📜 遊戲玩法指引</div>
+            <div class="scenario">
+                <b>歡迎來到出埃及記曠野大冒險！</b><br><br>
+                🚩 <b>遊戲目標：</b>由埃及蘭塞出發，尋找正確路線，最快抵達西奈山！<br><br>
+                🧭 <b>路線選擇：</b>每個地點均有 2 個選擇。選擇無絕對對錯，走錯路只會經歷更多旅途挑戰！<br><br>
+                ⏱️ <b>旅途 Mini-game：</b>每次選擇路線後，需要進行 Stopwatch 盲測挑戰。在隱藏時間下按 STOP 命中目標秒數！<br><br>
+                🏆 <b>勝出條件：</b>以<b>最早抵達終點的時間戳記</b>為準，完成後記得截圖上載！
+            </div>
+            <div class="btn-group">
+                <button class="btn-action" onclick="startGame()">🚀 開始冒險</button>
+                <button class="btn-sec" onclick="showScoreboardFromHome()">🏆 查看當前排行榜</button>
+            </div>
+        </div>
+    </div>
 
     <!-- 1. LOCATION SCREEN -->
-    <div id="location-screen">
+    <div id="location-screen" class="hidden">
+        <div id="ad-container" class="ad-box hidden"></div>
         <div class="card">
             <div class="loc-title" id="loc-name">📍 載入中...</div>
             <div class="scenario" id="scenario-text">...</div>
@@ -101,13 +111,13 @@
     <div id="minigame-screen" class="hidden">
         <div class="card">
             <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰</div>
-            <div style="font-size: 18px; font-weight: bold;">按下 STOP 捕捉目標時間！</div>
+            <div style="font-size: 18px; font-weight: bold;">按 STOP 捕捉目標時間！</div>
             
             <div class="timer-box">
-                目標：<span id="target-time">2.00</span> 秒
+                目標：<span id="target-time">2.0</span> 秒
             </div>
 
-            <div id="timer-status" style="font-size: 20px; color: #e67e22; height: 30px;">按 START 開始</div>
+            <div id="timer-status" style="font-size: 18px; color: #e67e22; height: 30px;">按 START 開始</div>
 
             <div class="result-box hidden" id="game-result"></div>
 
@@ -115,7 +125,8 @@
                 <button id="btn-timer-start" class="btn-action" onclick="startTimer()">START</button>
                 <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">STOP</button>
                 <button id="btn-timer-next" class="btn-action hidden" onclick="completeMiniGame()">繼續旅程 ➔</button>
-                <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="resetMiniGame()">再試一次</button>
+                <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="retryMiniGame()">再試一次 (剩餘 1 次)</button>
+                <button id="btn-timer-newtarget" class="btn-opt hidden" style="width:100%; margin-top:8px; background:#e67e22;" onclick="setupNewTargetMiniGame()">重置新目標秒數</button>
             </div>
         </div>
     </div>
@@ -123,8 +134,8 @@
     <!-- 3. WINNING & SCOREBOARD SCREEN -->
     <div id="win-screen" class="hidden">
         <div class="card" style="border-color: var(--success);">
-            <div class="loc-title" style="color: var(--success);">🎉 恭喜抵達西奈山！</div>
-            <div style="font-size: 14px; color: #555;">完成時間：<b id="completion-time">-</b></div>
+            <div class="loc-title" style="color: var(--success);" id="win-title">🎉 恭喜抵達西奈山！</div>
+            <div style="font-size: 14px; color: #555;" id="time-display-box">完成時間：<b id="completion-time">-</b></div>
             
             <div id="name-input-section" style="margin-top: 15px;">
                 <p style="font-size: 14px; margin-bottom: 8px;">🏆 請輸入名字登上排行榜：</p>
@@ -139,16 +150,21 @@
                 <div id="score-list"></div>
             </div>
 
-            <div class="notice-box">
+            <div class="notice-box" id="screenshot-notice">
                 📸 <b>記得截圖！</b><br>
                 請將此畫面截圖並發到 WhatsApp 群組報到！
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button class="btn-sec" id="btn-back-home" onclick="goHome()">返回首頁</button>
+                <button class="btn-sec" id="btn-clear-board" style="background:#e74c3c; margin-top:8px;" onclick="clearScoreboard()">🧹 清空排行榜 (大會測試用)</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// 1. TOPOLOGY & DATA MODEL (Specification v1.0)
+// TOPOLOGY & DATA
 const nodesData = {
     1: { name: "蘭塞", text: "大隊剛剛離開蘭塞。前面地勢平坦，但遠處幾條路開始分開。天色仲早，你哋準備向前行。", A: { txt: "沿住大隊留下嘅車轍繼續向前", next: 3 }, B: { txt: "見北面有水源，轉向水邊行", next: 2 } },
     2: { name: "密奪", text: "你哋發現周圍開始見唔到大隊蹤影。遠處有煙，但方向唔太清楚。", A: { txt: "跟住遠處煙柱，向高地方向走", next: 4 }, B: { txt: "避開主路，沿石堆之間嘅小路走", next: 9 } },
@@ -165,20 +181,41 @@ const nodesData = {
     13: { name: "西奈山", text: "你哋終於抵達西奈山。恭喜完成出埃及記冒險！🎉", end: true }
 };
 
-// GAME STATE
+const churchAds = [
+    "📢 <b>教會周年聚餐特別廣播：</b>「今個主日記得準時返嚟……等等，你而家咪已經喺周年聚餐囉！繼續食飯！」",
+    "📢 <b>大會溫馨提示：</b>「請注意，曠野路途遙遠，請定時補充熱量同美味食物！」",
+    "📢 <b>四方牆廣播：</b>「你以為選右邊就係屬靈正確？其實兩個選項都係同一個設計師寫嘅😏」"
+];
+
 let currentNode = 1;
 let pendingNextNode = null;
-let timerTarget = 2.00;
-let timerStartTime = 0;
-let timerElapsedTime = 0;
-let timerInterval = null;
+let timerTarget = 2.0;
+let timerAttemptCount = 0;
+let nodeVisitedCount = 0;
+let clickHeaderCount = 0;
 
-// INIT
-window.onload = function() {
+function startGame() {
+    currentNode = 1;
+    nodeVisitedCount = 0;
+    document.getElementById('home-screen').classList.add('hidden');
     renderLocation();
-};
+}
 
-// 2. LOCATION LOGIC
+function goHome() {
+    document.getElementById('win-screen').classList.add('hidden');
+    document.getElementById('home-screen').classList.remove('hidden');
+}
+
+function showScoreboardFromHome() {
+    document.getElementById('home-screen').classList.add('hidden');
+    document.getElementById('win-title').innerText = "🏆 當前排行榜";
+    document.getElementById('time-display-box').classList.add('hidden');
+    document.getElementById('name-input-section').classList.add('hidden');
+    document.getElementById('screenshot-notice').classList.add('hidden');
+    document.getElementById('win-screen').classList.remove('hidden');
+    renderScoreboard();
+}
+
 function renderLocation() {
     const node = nodesData[currentNode];
     if (node.end) {
@@ -186,10 +223,21 @@ function renderLocation() {
         return;
     }
 
+    nodeVisitedCount++;
+
+    // Random Church Ad Trigger (Every ~3 nodes, 30% chance)
+    const adContainer = document.getElementById('ad-container');
+    if (nodeVisitedCount > 1 && Math.random() < 0.4) {
+        const randomAd = churchAds[Math.floor(Math.random() * churchAds.length)];
+        adContainer.innerHTML = randomAd;
+        adContainer.classList.remove('hidden');
+    } else {
+        adContainer.classList.add('hidden');
+    }
+
     document.getElementById('loc-name').innerText = "📍 " + node.name;
     document.getElementById('scenario-text').innerText = node.text;
 
-    // Randomize Choice A & B Physical Position
     const choices = [
         { key: 'A', data: node.A },
         { key: 'B', data: node.B }
@@ -208,25 +256,27 @@ function renderLocation() {
 
 function selectChoice(nextNodeId) {
     pendingNextNode = nextNodeId;
-    startMiniGameSetup();
+    setupNewTargetMiniGame();
 }
 
-// 3. MINI-GAME (STOPWATCH) LOGIC
-function startMiniGameSetup() {
-    // Generate configurable target times: 1.50s, 2.00s, 2.50s, 3.00s
-    const targets = [1.50, 2.00, 2.50, 3.00];
-    timerTarget = targets[Math.floor(Math.random() * targets.length)];
+function setupNewTargetMiniGame() {
+    // Target time varies by 0.1s step (Range: 1.2s to 3.5s)
+    timerTarget = (Math.floor(Math.random() * 24) + 12) / 10;
+    timerAttemptCount = 0;
+    resetMiniGameUI();
+}
 
-    document.getElementById('target-time').innerText = timerTarget.toFixed(2);
+function resetMiniGameUI() {
+    document.getElementById('target-time').innerText = timerTarget.toFixed(1);
     document.getElementById('timer-status').innerText = "按 START 開始";
     document.getElementById('timer-status').style.color = "#e67e22";
 
-    // UI Reset
     document.getElementById('game-result').classList.add('hidden');
     document.getElementById('btn-timer-start').classList.remove('hidden');
     document.getElementById('btn-timer-stop').classList.add('hidden');
     document.getElementById('btn-timer-next').classList.add('hidden');
     document.getElementById('btn-timer-retry').classList.add('hidden');
+    document.getElementById('btn-timer-newtarget').classList.add('hidden');
 
     document.getElementById('location-screen').classList.add('hidden');
     document.getElementById('minigame-screen').classList.remove('hidden');
@@ -242,12 +292,13 @@ function startTimer() {
 
 function stopTimer() {
     const stopTime = Date.now();
-    timerElapsedTime = (stopTime - timerStartTime) / 1000;
+    const elapsedTime = (stopTime - timerStartTime) / 1000;
+    timerAttemptCount++;
 
     document.getElementById('btn-timer-stop').classList.add('hidden');
 
-    const diff = Math.abs(timerElapsedTime - timerTarget);
-    const tolerance = 0.35; // MVP tolerance range (TBD after testing)
+    const diff = Math.abs(elapsedTime - timerTarget);
+    const tolerance = 0.35; // Kept as requested
 
     const resultBox = document.getElementById('game-result');
     resultBox.classList.remove('hidden');
@@ -255,18 +306,24 @@ function stopTimer() {
     if (diff <= tolerance) {
         document.getElementById('timer-status').innerText = "✓ 挑戰成功！";
         document.getElementById('timer-status').style.color = "#27ae60";
-        resultBox.innerHTML = `實際時間：<b>${timerElapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒`;
+        resultBox.innerHTML = `實際時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒`;
         document.getElementById('btn-timer-next').classList.remove('hidden');
     } else {
         document.getElementById('timer-status').innerText = "❌ 差距太大！";
         document.getElementById('timer-status').style.color = "#e74c3c";
-        resultBox.innerHTML = `實際時間：<b>${timerElapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
-        document.getElementById('btn-timer-retry').classList.remove('hidden');
+        resultBox.innerHTML = `實際時間：<b>${elapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
+        
+        if (timerAttemptCount < 2) {
+            document.getElementById('btn-timer-retry').innerText = "再試一次 (剩餘 1 次機會)";
+            document.getElementById('btn-timer-retry').classList.remove('hidden');
+        } else {
+            document.getElementById('btn-timer-newtarget').classList.remove('hidden');
+        }
     }
 }
 
-function resetMiniGame() {
-    startMiniGameSetup();
+function retryMiniGame() {
+    resetMiniGameUI();
 }
 
 function completeMiniGame() {
@@ -274,24 +331,27 @@ function completeMiniGame() {
     renderLocation();
 }
 
-// 4. WINNING & SCOREBOARD LOGIC
 function showWinScreen() {
     document.getElementById('location-screen').classList.add('hidden');
     document.getElementById('minigame-screen').classList.add('hidden');
+    
+    document.getElementById('win-title').innerText = "🎉 恭喜抵達西奈山！";
+    document.getElementById('time-display-box').classList.remove('hidden');
+    document.getElementById('screenshot-notice').classList.remove('hidden');
     document.getElementById('win-screen').classList.remove('hidden');
 
-    // Record Timestamp if not already recorded
     let storedTime = localStorage.getItem('exodus_completion_time');
     if (!storedTime) {
         const now = new Date();
-        storedTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+        storedTime = now.toTimeString().split(' ')[0];
         localStorage.setItem('exodus_completion_time', storedTime);
         localStorage.setItem('exodus_timestamp_raw', now.getTime());
     }
     document.getElementById('completion-time').innerText = storedTime;
 
-    // Check if player has already submitted score
-    if (localStorage.getItem('exodus_player_name')) {
+    if (!localStorage.getItem('exodus_player_name')) {
+        document.getElementById('name-input-section').classList.remove('hidden');
+    } else {
         document.getElementById('name-input-section').classList.add('hidden');
     }
 
@@ -310,14 +370,9 @@ function submitScore() {
 
     localStorage.setItem('exodus_player_name', nameInput);
 
-    // Save to Local Scoreboard Array
     let scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
-    
-    // Avoid duplicate user submission in array
     scores = scores.filter(s => s.name !== nameInput);
     scores.push({ name: nameInput, time: timeStr, raw: parseInt(rawTime) });
-    
-    // Sort by timestamp ASC (earliest completed first)
     scores.sort((a, b) => a.raw - b.raw);
     localStorage.setItem('exodus_scores', JSON.stringify(scores));
 
@@ -354,10 +409,29 @@ function renderScoreboard() {
         `;
     });
 
-    if (userRank > 0) {
+    if (userRank > 0 && localStorage.getItem('exodus_player_name')) {
         const rankDisplay = document.getElementById('rank-result');
         rankDisplay.classList.remove('hidden');
         rankDisplay.innerText = `🏆 你係今場第 ${userRank} 位完成者！`;
+    }
+}
+
+function clearScoreboard() {
+    if (confirm("確定要清空排行榜和本地遊戲紀錄嗎？（適合正式活動開場前使用）")) {
+        localStorage.removeItem('exodus_scores');
+        localStorage.removeItem('exodus_completion_time');
+        localStorage.removeItem('exodus_timestamp_raw');
+        localStorage.removeItem('exodus_player_name');
+        alert("排行榜已清空！");
+        renderScoreboard();
+    }
+}
+
+function adminResetCheck() {
+    clickHeaderCount++;
+    if (clickHeaderCount >= 5) {
+        clickHeaderCount = 0;
+        clearScoreboard();
     }
 }
 
