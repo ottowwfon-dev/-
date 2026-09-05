@@ -1,299 +1,372 @@
 <!DOCTYPE html>
 <html lang="zh-HK">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>聖經尋寶大冒險 - 9點迷宮版</title>
-<style>
-    :root {
-        --primary: #2c3e50;
-        --accent: #e67e22;
-        --bg: #f8f9fa;
-        --card-bg: #ffffff;
-    }
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        background: var(--bg);
-        margin: 0;
-        padding: 15px;
-        display: flex;
-        justify-content: center;
-    }
-    .game-container {
-        width: 100%;
-        max-width: 480px;
-        background: var(--card-bg);
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-        padding: 20px;
-        box-sizing: border-box;
-    }
-    h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
-    .select-group { margin-bottom: 15px; }
-    select {
-        width: 100%; padding: 12px; font-size: 16px;
-        border-radius: 8px; border: 1px solid #ccc; background: #fff;
-    }
-    .status-bar {
-        display: flex; justify-content: space-between; align-items: center;
-        gap: 8px; background: #eef2f5; padding: 10px 12px;
-        border-radius: 8px; margin-bottom: 15px;
-    }
-    .tokens { font-size: 18px; font-weight: bold; color: #e74c3c; }
-    .top-buttons { display: flex; gap: 6px; }
-    .small-btn {
-        padding: 7px 9px; font-size: 12px; background: #95a5a6;
-        color: #fff; border: none; border-radius: 7px; cursor: pointer;
-    }
-    .card {
-        border: 2px solid var(--primary); border-radius: 12px;
-        padding: 15px; text-align: center; background: #fff; margin-bottom: 15px;
-    }
-    .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
-    .scenario { font-size: 15px; color: #555; line-height: 1.5; margin-bottom: 15px; text-align: left; }
-    .btn-group { display: flex; gap: 10px; flex-direction: column; }
-    button {
-        padding: 14px; font-size: 15px; font-weight: bold;
-        border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
-    }
-    .btn-opt { background-color: #3498db; color: white; }
-    .btn-opt:nth-child(even) { background-color: #e67e22; }
-    button:active { transform: scale(0.98); opacity: 0.9; }
-    .hidden { display: none; }
-    .hint {
-        font-size: 12px; color: #777; margin-top: 10px; text-align: center;
-    }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>聖經尋寶大冒險 - 出埃及記</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --success: #27ae60;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 98vh;
+            box-sizing: border-box;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 450px;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 20px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
+        .card {
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 18px;
+            text-align: center;
+            background: #fff;
+            margin-bottom: 15px;
+        }
+        .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 12px; }
+        .scenario { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 20px; text-align: left; }
+        .btn-group { display: flex; gap: 12px; flex-direction: column; }
+        button {
+            padding: 14px; font-size: 15px; font-weight: bold;
+            border: none; border-radius: 10px; cursor: pointer; transition: 0.15s;
+        }
+        .btn-opt { background-color: #3498db; color: white; }
+        .btn-opt:nth-child(even) { background-color: #e67e22; }
+        .btn-action { background-color: var(--success); color: white; width: 100%; font-size: 18px; }
+        .btn-stop { background-color: #e74c3c; color: white; width: 100%; font-size: 18px; }
+        button:active { transform: scale(0.97); opacity: 0.9; }
+        
+        /* Mini-game styles */
+        .timer-box {
+            font-size: 36px; font-weight: bold; color: var(--primary);
+            margin: 20px 0; padding: 20px; background: #f0f3f4; border-radius: 10px;
+        }
+        .result-box { margin: 15px 0; font-size: 16px; line-height: 1.5; }
+        
+        /* Leaderboard styles */
+        input[type="text"] {
+            width: 100%; padding: 12px; font-size: 16px; border-radius: 8px;
+            border: 1px solid #ccc; margin-bottom: 12px; box-sizing: border-box; text-align: center;
+        }
+        .scoreboard {
+            margin-top: 15px; text-align: left; background: #f8f9fa;
+            border-radius: 8px; padding: 10px; border: 1px solid #ddd;
+        }
+        .score-item {
+            display: flex; justify-content: space-between;
+            padding: 8px 0; border-bottom: 1px dashed #ccc; font-size: 14px;
+        }
+        .score-item:last-child { border-bottom: none; }
+        .notice-box {
+            background: #fff3cd; color: #856404; padding: 12px;
+            border-radius: 8px; margin-top: 15px; font-size: 13px; text-align: left;
+        }
+        .hidden { display: none; }
+    </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>⛪ 聖經尋寶大冒險</h1>
+    <h1>⛪ 聖經尋寶大冒險 - 出埃及記</h1>
 
-    <div class="select-group" id="setup-screen">
-        <label for="pathSelect"><b>請選擇遊戲路線：</b></label>
-        <select id="pathSelect">
-            <option value="p0">0. 新手教學試玩路線 (Tutorial)</option>
-            <option value="p1">1. 出埃及記曠野路程</option>
-            <option value="p2">2. 保羅宣教之旅</option>
-            <option value="p3">3. 亞伯拉罕信心之旅</option>
-            <option value="p4">4. 福音書耶穌靴履之旅</option>
-        </select>
-        <button class="btn-opt" style="width:100%; margin-top:15px;" onclick="startGame()">開始遊戲</button>
+    <!-- 1. LOCATION SCREEN -->
+    <div id="location-screen">
+        <div class="card">
+            <div class="loc-title" id="loc-name">📍 載入中...</div>
+            <div class="scenario" id="scenario-text">...</div>
+            <div class="btn-group" id="choice-buttons"></div>
+        </div>
     </div>
 
-    <div id="game-screen" class="hidden">
-        <div class="status-bar">
-            <div>剩餘 Token：<span class="tokens" id="token-count">9</span> 🪙</div>
-            <div class="top-buttons">
-                <button class="small-btn" onclick="resetGame()">重玩</button>
-                <button class="small-btn" onclick="backToMenu()">換路線</button>
+    <!-- 2. MINI-GAME SCREEN (STOPWATCH) -->
+    <div id="minigame-screen" class="hidden">
+        <div class="card">
+            <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 旅途挑戰</div>
+            <div style="font-size: 18px; font-weight: bold;">按下 STOP 捕捉目標時間！</div>
+            
+            <div class="timer-box">
+                目標：<span id="target-time">2.00</span> 秒
+            </div>
+
+            <div id="timer-status" style="font-size: 20px; color: #e67e22; height: 30px;">按 START 開始</div>
+
+            <div class="result-box hidden" id="game-result"></div>
+
+            <div style="margin-top: 15px;">
+                <button id="btn-timer-start" class="btn-action" onclick="startTimer()">START</button>
+                <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">STOP</button>
+                <button id="btn-timer-next" class="btn-action hidden" onclick="completeMiniGame()">繼續旅程 ➔</button>
+                <button id="btn-timer-retry" class="btn-opt hidden" style="width:100%; margin-top:8px;" onclick="resetMiniGame()">再試一次</button>
             </div>
         </div>
+    </div>
 
-        <div class="card">
-            <div class="loc-title" id="loc-name">起點</div>
-            <div class="scenario" id="scenario-text">情境載入中...</div>
-            <div class="btn-group" id="action-buttons"></div>
-            <div class="hint">每作一次選擇消耗 1 Token；兩個選項都會前進。</div>
+    <!-- 3. WINNING & SCOREBOARD SCREEN -->
+    <div id="win-screen" class="hidden">
+        <div class="card" style="border-color: var(--success);">
+            <div class="loc-title" style="color: var(--success);">🎉 恭喜抵達西奈山！</div>
+            <div style="font-size: 14px; color: #555;">完成時間：<b id="completion-time">-</b></div>
+            
+            <div id="name-input-section" style="margin-top: 15px;">
+                <p style="font-size: 14px; margin-bottom: 8px;">🏆 請輸入名字登上排行榜：</p>
+                <input type="text" id="player-name" placeholder="輸入姓名 / 暱稱" maxlength="15">
+                <button class="btn-action" onclick="submitScore()">提交成績</button>
+            </div>
+
+            <div id="rank-result" class="hidden" style="margin: 15px 0; font-size: 18px; font-weight: bold; color: var(--accent);"></div>
+
+            <div class="scoreboard">
+                <div style="font-weight: bold; text-align: center; margin-bottom: 8px;">🏆 全場完成排行榜</div>
+                <div id="score-list"></div>
+            </div>
+
+            <div class="notice-box">
+                📸 <b>記得截圖！</b><br>
+                請將此畫面截圖並發到 WhatsApp 群組報到！
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-/*
-TOPOLOGY DESIGN — 9 nodes
-Main shortest route: 1 → 3 → 5 → 6 → 8 → 9
-True shortest distances:
-1=5, 3=4, 5=3, 6=2, 8=1, 9=0
-Distractors:
-2=4, 4=3, 7=4
-
-Wrong-choice penalties from the main route:
-1 → 1  = +1 (loop back to same location; still consumes a move)
-3 → 2  = +1
-5 → 4  = +1
-6 → 4  = +2
-8 → 6  = +2
-
-Distractor maze:
-2 → 7 and 7 → 2 create a death loop.
-Both still have an escape to 4.
-4 → 7 is a +2 setback, while 4 → 6 is the shortest escape.
-
-The topology is shared by all routes; Bible content is only the setting/skin.
-*/
-
-const gameData = {
-    p0: {
-        name: "新手教學試玩路線",
-        startToken: 5,
-        nodes: {
-            1: { name:"教學起點", text:"前面有兩條看似合理的路。記住：每次選擇都會前進，但有些路會令你兜圈。", A:{txt:"沿著眼前小徑轉入林邊",next:1}, B:{txt:"向遠處較清楚的路標前進",next:3} },
-            2: { name:"迷霧岔路", text:"你發現自己進入一片霧區，遠處似乎有另一個出口。", A:{txt:"朝著較亮的方向走",next:4}, B:{txt:"追著剛才留下的腳印走",next:7} },
-            3: { name:"山口", text:"風勢突然變大，兩條路都可以繼續前進。", A:{txt:"轉入一條較窄的側路",next:2}, B:{txt:"沿山脊方向前進",next:5} },
-            4: { name:"石坡", text:"前面出現陡坡，旁邊另有一條通往低處的路。", A:{txt:"攀上前面的高坡",next:6}, B:{txt:"沿著低處小徑繞過去",next:7} },
-            5: { name:"林中岔口", text:"你聞到一陣食物香味，但完全看不到煙。兩個方向都似乎有可能找到來源。", A:{txt:"沿著香味較濃的方向深入",next:6}, B:{txt:"繞到另一邊尋找高位觀察",next:4} },
-            6: { name:"狹窄山徑", text:"你已經很接近目的地，但前方有一個岔口。", A:{txt:"沿著山徑繼續向前",next:8}, B:{txt:"轉入旁邊較寬的路",next:4} },
-            7: { name:"霧中小徑", text:"你開始覺得四周景物很熟悉，好像剛才已經來過。", A:{txt:"轉向石坡尋找出口",next:4}, B:{txt:"跟著另一串腳印走",next:2} },
-            8: { name:"最後岔口", text:"前方已經隱約看到終點，但旁邊還有一條路通向另一個方向。", A:{txt:"轉入旁邊的山徑",next:6}, B:{txt:"直向前往終點",next:9} },
-            9: { name:"終點", text:"🎉 恭喜！你成功抵達終點！", end:true }
-        }
-    },
-
-    p1: {
-        name:"出埃及記曠野路程",
-        startToken:9,
-        nodes:{
-            1:{name:"蘭塞（埃及）",text:"你哋準備離開營地。前面一條路貼近水邊，另一條向內陸延伸。",A:{txt:"沿水邊小路前進",next:1},B:{txt:"向遠處山口方向走",next:3}},
-            2:{name:"比哈希錄",text:"霧氣遮住前方，遠處似乎有微弱燈光。",A:{txt:"朝燈光方向走",next:4},B:{txt:"沿著舊腳印轉入另一條路",next:7}},
-            3:{name:"瑪拉",text:"你哋見到水源附近有兩條路：一條穿過樹林，一條沿高地前進。",A:{txt:"穿過樹林尋找出口",next:2},B:{txt:"沿高地路線前進",next:5}},
-            4:{name:"汛曠野",text:"地勢開始升高，前面有一段陡坡，亦有小路繞到低處。",A:{txt:"直接攀上陡坡",next:6},B:{txt:"沿低處繞行",next:7}},
-            5:{name:"利非訂",text:"你哋聞到一陣食物香味，但完全睇唔到煙。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"上山丘搵高位觀察",next:4}},
-            6:{name:"基博羅哈他瓦",text:"山徑變得狹窄，前面有一個分岔口。",A:{txt:"沿著較窄山徑繼續",next:8},B:{txt:"轉入較闊的側路",next:4}},
-            7:{name:"哈洗錄",text:"四周霧氣很濃，你哋開始覺得好似兜咗一圈。",A:{txt:"向石坡方向走",next:4},B:{txt:"追另一串腳印",next:2}},
-            8:{name:"加低斯巴尼亞",text:"你哋已經隱約見到前方目的地，但旁邊仍有一條路。",A:{txt:"轉入旁邊山徑",next:6},B:{txt:"沿直路向前",next:9}},
-            9:{name:"迦南應許之地",text:"🎉 恭喜！你哋成功抵達目的地！",end:true}
-        }
-    },
-
-    p2: {
-        name:"保羅宣教之旅",
-        startToken:9,
-        nodes:{
-            1:{name:"安提阿",text:"出發後遇到分岔：一條沿海，一條向山區。",A:{txt:"沿海岸線前進",next:1},B:{txt:"向山口方向前進",next:3}},
-            2:{name:"塞浦路斯",text:"海風吹來，前面出現一盞遠處的燈。",A:{txt:"朝燈光靠近",next:4},B:{txt:"跟住岸邊舊路走",next:7}},
-            3:{name:"特羅亞",text:"你哋見到兩條小路，一條較窄但似乎通往高地。",A:{txt:"轉入窄路",next:2},B:{txt:"沿高地方向走",next:5}},
-            4:{name:"別加",text:"山路開始變斜，亦有一條路可以繞過斜坡。",A:{txt:"翻過前面的山坡",next:6},B:{txt:"沿低處繞路",next:7}},
-            5:{name:"腓立比",text:"你哋聞到一陣食物香味，但睇唔到附近有任何火光。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"登上高地尋找來源",next:4}},
-            6:{name:"帖撒羅尼迦",text:"前面道路分開兩邊，一條窄，一條闊。",A:{txt:"沿窄路直走",next:8},B:{txt:"轉入闊路",next:4}},
-            7:{name:"庇哩亞",text:"你哋開始發現幾個地標重複出現。",A:{txt:"向石坡方向轉",next:4},B:{txt:"沿另一串腳印走",next:2}},
-            8:{name:"哥林多",text:"前方已經見到目的地的輪廓，但旁邊還有另一條路。",A:{txt:"轉入側路",next:6},B:{txt:"直向目的地前進",next:9}},
-            9:{name:"羅馬",text:"🎉 恭喜！你哋成功抵達終點！",end:true}
-        }
-    },
-
-    p3: {
-        name:"亞伯拉罕信心之旅",
-        startToken:9,
-        nodes:{
-            1:{name:"吾珥",text:"隊伍準備出發。前面有一條河邊路和一條通往山丘的路。",A:{txt:"沿河邊小路走",next:1},B:{txt:"向山丘方向走",next:3}},
-            2:{name:"哈蘭",text:"霧中見到遠處有微光，亦有一串舊腳印。",A:{txt:"向微光方向走",next:4},B:{txt:"跟住腳印轉入小徑",next:7}},
-            3:{name:"示劍",text:"你哋來到一個高地岔路口。",A:{txt:"轉入樹林小路",next:2},B:{txt:"沿高地繼續走",next:5}},
-            4:{name:"艾城外圍",text:"前面係陡坡，旁邊有低處小路。",A:{txt:"直接攀坡",next:6},B:{txt:"繞低處行",next:7}},
-            5:{name:"希伯崙（幔利橡樹）",text:"你哋聞到食物香味，卻完全睇唔到煙。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"上高位尋找來源",next:4}},
-            6:{name:"所多瑪郊野",text:"山徑變窄，前面出現兩個方向。",A:{txt:"沿窄山徑前進",next:8},B:{txt:"轉入較闊側路",next:4}},
-            7:{name:"瑣珥小鎮",text:"你哋開始覺得沿途景物好熟悉。",A:{txt:"向石坡方向走",next:4},B:{txt:"追另一串腳印",next:2}},
-            8:{name:"摩利亞山",text:"已經隱約見到目的地，但另一條路仍然通向遠方。",A:{txt:"轉入側路",next:6},B:{txt:"沿直路前往終點",next:9}},
-            9:{name:"應許成就",text:"🎉 恭喜！你哋成功抵達終點！",end:true}
-        }
-    },
-
-    p4: {
-        name:"福音書耶穌靴履之旅",
-        startToken:9,
-        nodes:{
-            1:{name:"拿撒勒／加利利",text:"你哋準備出發，一條路靠近湖邊，另一條向山丘延伸。",A:{txt:"沿湖邊前進",next:1},B:{txt:"向山丘方向走",next:3}},
-            2:{name:"迦百農",text:"前面有霧，遠處似乎有燈光。",A:{txt:"朝燈光方向走",next:4},B:{txt:"跟住腳印轉入小徑",next:7}},
-            3:{name:"伯賽大",text:"湖邊有兩條路，一條入林，一條向高地。",A:{txt:"穿過樹林",next:2},B:{txt:"沿高地走",next:5}},
-            4:{name:"格拉森",text:"前面有陡坡，旁邊有路可以繞到低處。",A:{txt:"攀上陡坡",next:6},B:{txt:"沿低處繞行",next:7}},
-            5:{name:"凱撒利亞腓立比",text:"你哋聞到食物香味，但完全睇唔到煙。",A:{txt:"深入樹林追蹤香味",next:6},B:{txt:"上高位尋找來源",next:4}},
-            6:{name:"耶利哥",text:"前方道路分岔，一條窄，一條闊。",A:{txt:"沿窄路前進",next:8},B:{txt:"轉入較闊側路",next:4}},
-            7:{name:"伯法其",text:"幾個地標重複出現，你哋開始懷疑自己兜圈。",A:{txt:"向石坡方向走",next:4},B:{txt:"跟另一串腳印",next:2}},
-            8:{name:"客西馬尼園",text:"前方已經隱約見到目的地，但旁邊仍有另一條路。",A:{txt:"轉入側路",next:6},B:{txt:"直向前方走",next:9}},
-            9:{name:"空墳墓",text:"🎉 恭喜！你哋成功抵達終點！",end:true}
-        }
-    }
+// 1. TOPOLOGY & DATA MODEL (Specification v1.0)
+const nodesData = {
+    1: { name: "蘭塞", text: "大隊剛剛離開蘭塞。前面地勢平坦，但遠處幾條路開始分開。天色仲早，你哋準備向前行。", A: { txt: "沿住大隊留下嘅車轍繼續向前", next: 3 }, B: { txt: "見北面有水源，轉向水邊行", next: 2 } },
+    2: { name: "密奪", text: "你哋發現周圍開始見唔到大隊蹤影。遠處有煙，但方向唔太清楚。", A: { txt: "跟住遠處煙柱，向高地方向走", next: 4 }, B: { txt: "避開主路，沿石堆之間嘅小路走", next: 9 } },
+    3: { name: "疏割", text: "前面地勢開始開闊，風亦越來越大。你哋見到兩條可以繼續前進嘅路。", A: { txt: "沿住開闊地帶繼續向前", next: 5 }, B: { txt: "繞去遠處高地，睇清楚前面地形", next: 4 } },
+    4: { name: "巴力洗分", text: "周圍嘅地標開始變得模糊。前面一邊比較平坦，另一邊就有一條窄窄嘅路。", A: { txt: "沿較平坦嘅路繼續", next: 6 }, B: { txt: "轉入窄路，避開風吹得最勁嘅地方", next: 11 } },
+    5: { name: "以倘", text: "天開始轉暗。你哋聽到前方似乎有水聲，但另一邊亦見到一串新鮮腳印。", A: { txt: "跟住水聲方向前進", next: 7 }, B: { txt: "追蹤地上嘅腳印", next: 6 } },
+    6: { name: "海邊支線", text: "你哋行到一片較空曠嘅地方。前面似乎可以繼續沿海邊走，亦有腳印向內陸延伸。", A: { txt: "沿海邊尋找較易通過嘅位置", next: 7 }, B: { txt: "跟住內陸嘅腳印走", next: 9 } },
+    7: { name: "比哈希錄", text: "前面突然出現大片水域，隊伍亦開始聚集。另一邊有一條較窄嘅岩坡路。", A: { txt: "沿住人群留下嘅路向前", next: 10 }, B: { txt: "避開人群，轉入岩坡小路", next: 8 } },
+    8: { name: "以琳", text: "呢度突然出現樹木同水源，看起來比之前舒服好多。但前面有兩條路，一條向山谷，一條向較高地。", A: { txt: "沿住熟悉嘅路跡折返", next: 7 }, B: { txt: "跟另一隊人嘅腳印繼續向前", next: 11 } },
+    9: { name: "曠野路線", text: "你哋開始懷疑自己係咪行錯咗。附近有幾個石標，其中一個似乎係之前見過嘅。", A: { txt: "沿山腳繞行，尋找更多石標", next: 11 }, B: { txt: "轉返去之前見過嘅路口", next: 2 } },
+    10: { name: "紅海", text: "海水已經退開，但前面仍然係一片陌生地形。你哋要決定下一步點行。", A: { txt: "沿住較平坦嘅谷地繼續前進", next: 12 }, B: { txt: "跟住另一邊嘅足跡離開", next: 6 } },
+    11: { name: "曠野路線", text: "你哋又遇到熟悉嘅地形。風向變化令原本嘅路跡越來越難辨認。", A: { txt: "向低地行，尋找之前見過嘅路標", next: 9 }, B: { txt: "沿岩壁繞行，避開鬆散沙地", next: 4 } },
+    12: { name: "利非訂", text: "你哋終於行到一片比較穩定嘅山谷。遠方出現一座高大山峰。", A: { txt: "沿山谷向住高山方向前進", next: 13 }, B: { txt: "轉入另一條看似更近嘅山徑", next: 8 } },
+    13: { name: "西奈山", text: "你哋終於抵達西奈山。恭喜完成出埃及記冒險！🎉", end: true }
 };
 
-let currentPath = null;
-let currentPathId = null;
+// GAME STATE
 let currentNode = 1;
-let tokens = 9;
-let gameOver = false;
+let pendingNextNode = null;
+let timerTarget = 2.00;
+let timerStartTime = 0;
+let timerElapsedTime = 0;
+let timerInterval = null;
 
-function startGame() {
-    const selected = document.getElementById('pathSelect').value;
-    currentPathId = selected;
-    currentPath = gameData[selected];
+// INIT
+window.onload = function() {
+    renderLocation();
+};
 
-    document.getElementById('setup-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-    resetGame();
-}
-
-function resetGame() {
-    if (!currentPath) return;
-    currentNode = 1;
-    tokens = currentPath.startToken || 9;
-    gameOver = false;
-    updateUI();
-}
-
-function backToMenu() {
-    currentPath = null;
-    currentPathId = null;
-    currentNode = 1;
-    tokens = 9;
-    gameOver = false;
-
-    document.getElementById('game-screen').classList.add('hidden');
-    document.getElementById('setup-screen').classList.remove('hidden');
-}
-
-function updateUI() {
-    const node = currentPath.nodes[currentNode];
-
-    document.getElementById('token-count').innerText = tokens;
-    document.getElementById('loc-name').innerText = node.name;
-    document.getElementById('scenario-text').innerText = node.text;
-
-    const actionBox = document.getElementById('action-buttons');
-
+// 2. LOCATION LOGIC
+function renderLocation() {
+    const node = nodesData[currentNode];
     if (node.end) {
-        gameOver = true;
-        actionBox.innerHTML =
-            `<button class="btn-opt" style="width:100%" onclick="resetGame()">重新挑戰本路線</button>
-             <button class="btn-opt" style="width:100%; margin-top:10px;" onclick="backToMenu()">返回路線選擇</button>`;
+        showWinScreen();
         return;
     }
 
-    const choices = [
-        { key: 'A', txt: node.A.txt },
-        { key: 'B', txt: node.B.txt }
-    ];
+    document.getElementById('loc-name').innerText = "📍 " + node.name;
+    document.getElementById('scenario-text').innerText = node.text;
 
-    // Randomize physical button order so A/B cannot be memorized by position.
+    // Randomize Choice A & B Physical Position
+    const choices = [
+        { key: 'A', data: node.A },
+        { key: 'B', data: node.B }
+    ];
     if (Math.random() < 0.5) choices.reverse();
 
-    actionBox.innerHTML = `
-        <button class="btn-opt" onclick="makeChoice('${choices[0].key}')">${choices[0].txt}</button>
-        <button class="btn-opt" onclick="makeChoice('${choices[1].key}')">${choices[1].txt}</button>
+    const choiceBox = document.getElementById('choice-buttons');
+    choiceBox.innerHTML = `
+        <button class="btn-opt" onclick="selectChoice(${choices[0].data.next})">${choices[0].data.txt}</button>
+        <button class="btn-opt" onclick="selectChoice(${choices[1].data.next})">${choices[1].data.txt}</button>
     `;
+
+    document.getElementById('location-screen').classList.remove('hidden');
+    document.getElementById('minigame-screen').classList.add('hidden');
 }
 
-function makeChoice(choiceKey) {
-    if (!currentPath || gameOver || tokens <= 0) return;
+function selectChoice(nextNodeId) {
+    pendingNextNode = nextNodeId;
+    startMiniGameSetup();
+}
 
-    const node = currentPath.nodes[currentNode];
-    const nextNodeId = node[choiceKey].next;
+// 3. MINI-GAME (STOPWATCH) LOGIC
+function startMiniGameSetup() {
+    // Generate configurable target times: 1.50s, 2.00s, 2.50s, 3.00s
+    const targets = [1.50, 2.00, 2.50, 3.00];
+    timerTarget = targets[Math.floor(Math.random() * targets.length)];
 
-    tokens--;
-    currentNode = nextNodeId;
+    document.getElementById('target-time').innerText = timerTarget.toFixed(2);
+    document.getElementById('timer-status').innerText = "按 START 開始";
+    document.getElementById('timer-status').style.color = "#e67e22";
 
-    if (currentPath.nodes[currentNode].end) {
-        updateUI();
-        setTimeout(() => alert("🎉 恭喜！成功抵達終點！"), 50);
-    } else if (tokens === 0) {
-        gameOver = true;
-        updateUI();
-        setTimeout(() => {
-            alert("🪙 Token 用盡！你哋今次迷路咗。可以重新挑戰，或者返回路線選擇。");
-        }, 50);
+    // UI Reset
+    document.getElementById('game-result').classList.add('hidden');
+    document.getElementById('btn-timer-start').classList.remove('hidden');
+    document.getElementById('btn-timer-stop').classList.add('hidden');
+    document.getElementById('btn-timer-next').classList.add('hidden');
+    document.getElementById('btn-timer-retry').classList.add('hidden');
+
+    document.getElementById('location-screen').classList.add('hidden');
+    document.getElementById('minigame-screen').classList.remove('hidden');
+}
+
+function startTimer() {
+    timerStartTime = Date.now();
+    document.getElementById('btn-timer-start').classList.add('hidden');
+    document.getElementById('btn-timer-stop').classList.remove('hidden');
+    document.getElementById('timer-status').innerText = "⏱️ 計時中……（已隱藏）";
+    document.getElementById('timer-status').style.color = "#27ae60";
+}
+
+function stopTimer() {
+    const stopTime = Date.now();
+    timerElapsedTime = (stopTime - timerStartTime) / 1000;
+
+    document.getElementById('btn-timer-stop').classList.add('hidden');
+
+    const diff = Math.abs(timerElapsedTime - timerTarget);
+    const tolerance = 0.35; // MVP tolerance range (TBD after testing)
+
+    const resultBox = document.getElementById('game-result');
+    resultBox.classList.remove('hidden');
+
+    if (diff <= tolerance) {
+        document.getElementById('timer-status').innerText = "✓ 挑戰成功！";
+        document.getElementById('timer-status').style.color = "#27ae60";
+        resultBox.innerHTML = `實際時間：<b>${timerElapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒`;
+        document.getElementById('btn-timer-next').classList.remove('hidden');
     } else {
-        updateUI();
+        document.getElementById('timer-status').innerText = "❌ 差距太大！";
+        document.getElementById('timer-status').style.color = "#e74c3c";
+        resultBox.innerHTML = `實際時間：<b>${timerElapsedTime.toFixed(2)}</b> 秒<br>差距：<b>${diff.toFixed(2)}</b> 秒 (需 ≤ ${tolerance}s)`;
+        document.getElementById('btn-timer-retry').classList.remove('hidden');
     }
 }
+
+function resetMiniGame() {
+    startMiniGameSetup();
+}
+
+function completeMiniGame() {
+    currentNode = pendingNextNode;
+    renderLocation();
+}
+
+// 4. WINNING & SCOREBOARD LOGIC
+function showWinScreen() {
+    document.getElementById('location-screen').classList.add('hidden');
+    document.getElementById('minigame-screen').classList.add('hidden');
+    document.getElementById('win-screen').classList.remove('hidden');
+
+    // Record Timestamp if not already recorded
+    let storedTime = localStorage.getItem('exodus_completion_time');
+    if (!storedTime) {
+        const now = new Date();
+        storedTime = now.toTimeString().split(' ')[0]; // HH:MM:SS
+        localStorage.setItem('exodus_completion_time', storedTime);
+        localStorage.setItem('exodus_timestamp_raw', now.getTime());
+    }
+    document.getElementById('completion-time').innerText = storedTime;
+
+    // Check if player has already submitted score
+    if (localStorage.getItem('exodus_player_name')) {
+        document.getElementById('name-input-section').classList.add('hidden');
+    }
+
+    renderScoreboard();
+}
+
+function submitScore() {
+    const nameInput = document.getElementById('player-name').value.trim();
+    if (!nameInput) {
+        alert("請輸入姓名或暱稱！");
+        return;
+    }
+
+    const timeStr = localStorage.getItem('exodus_completion_time');
+    const rawTime = localStorage.getItem('exodus_timestamp_raw') || Date.now();
+
+    localStorage.setItem('exodus_player_name', nameInput);
+
+    // Save to Local Scoreboard Array
+    let scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
+    
+    // Avoid duplicate user submission in array
+    scores = scores.filter(s => s.name !== nameInput);
+    scores.push({ name: nameInput, time: timeStr, raw: parseInt(rawTime) });
+    
+    // Sort by timestamp ASC (earliest completed first)
+    scores.sort((a, b) => a.raw - b.raw);
+    localStorage.setItem('exodus_scores', JSON.stringify(scores));
+
+    document.getElementById('name-input-section').classList.add('hidden');
+    renderScoreboard();
+}
+
+function renderScoreboard() {
+    const scores = JSON.parse(localStorage.getItem('exodus_scores') || "[]");
+    const currentName = localStorage.getItem('exodus_player_name');
+    const scoreList = document.getElementById('score-list');
+
+    scoreList.innerHTML = "";
+    if (scores.length === 0) {
+        scoreList.innerHTML = `<div style="text-align:center; color:#888; padding:8px;">暫無紀錄</div>`;
+        return;
+    }
+
+    let userRank = -1;
+    scores.forEach((item, index) => {
+        const rank = index + 1;
+        let medal = `${rank}.`;
+        if (rank === 1) medal = "🥇 1.";
+        else if (rank === 2) medal = "🥈 2.";
+        else if (rank === 3) medal = "🥉 3.";
+
+        if (item.name === currentName) userRank = rank;
+
+        scoreList.innerHTML += `
+            <div class="score-item" style="${item.name === currentName ? 'font-weight:bold; color:var(--accent);' : ''}">
+                <span>${medal} ${escapeHtml(item.name)}</span>
+                <span>${item.time}</span>
+            </div>
+        `;
+    });
+
+    if (userRank > 0) {
+        const rankDisplay = document.getElementById('rank-result');
+        rankDisplay.classList.remove('hidden');
+        rankDisplay.innerText = `🏆 你係今場第 ${userRank} 位完成者！`;
+    }
+}
+
+function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m];
+    });
+}
 </script>
+
 </body>
 </html>
