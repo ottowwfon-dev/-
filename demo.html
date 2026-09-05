@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>【示範版】聖經尋寶大冒險</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --bg: #f8f9fa;
+            --card-bg: #ffffff;
+            --success: #27ae60;
+            --danger: #e74c3c;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            margin: 0; padding: 15px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 98vh; box-sizing: border-box;
+        }
+        .game-container {
+            width: 100%; max-width: 450px;
+            background: var(--card-bg); border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 20px; box-sizing: border-box;
+        }
+        h1 { font-size: 20px; text-align: center; color: var(--primary); margin-top: 0; }
+        .card {
+            border: 2px solid var(--primary); border-radius: 12px;
+            padding: 18px; text-align: center; background: #fff; margin-bottom: 15px;
+        }
+        .loc-title { font-size: 22px; font-weight: bold; color: var(--primary); margin-bottom: 12px; }
+        .scenario { font-size: 15px; color: #444; line-height: 1.6; margin-bottom: 20px; text-align: left; }
+        .btn-group { display: flex; gap: 12px; flex-direction: column; }
+        button {
+            padding: 14px; font-size: 15px; font-weight: bold;
+            border: none; border-radius: 10px; cursor: pointer; transition: 0.15s;
+        }
+        .btn-correct { background-color: #27ae60; color: white; }
+        .btn-wrong { background-color: #e74c3c; color: white; }
+        .btn-action { background-color: var(--success); color: white; width: 100%; font-size: 18px; }
+        .btn-stop { background-color: var(--danger); color: white; width: 100%; font-size: 22px; padding: 18px; animation: pulse 1.5s infinite; }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .timer-box {
+            font-size: 32px; font-weight: bold; color: var(--primary);
+            margin: 15px 0; padding: 15px; background: #f0f3f4; border-radius: 10px;
+        }
+        .instruction-box {
+            background: #e8f4f8; border-left: 4px solid #3498db;
+            padding: 10px; text-align: left; font-size: 14px; color: #2c3e50; margin-bottom: 15px; border-radius: 4px;
+        }
+        .result-box { margin: 15px 0; font-size: 16px; line-height: 1.5; }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: white; }
+        .badge-demo { background: #8e44ad; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>⛪ 聖經尋寶大冒險 <span class="badge badge-demo">DEMO 示範版</span></h1>
+
+    <!-- 0. HOMEPAGE -->
+    <div id="home-screen">
+        <div class="card">
+            <div class="loc-title">🎮 玩法快速示範</div>
+            <div class="scenario">
+                此版本為 <b>Demo 測試版</b>，只有 3 個地點。<br><br>
+                為方便主持人示範，按鈕已加上<b>【正確 ✅】</b>及<b>【錯誤 ❌】</b>標籤。<br><br>
+                玩法流程：選擇路線 ➔ 完成 Stopwatch 盲測 ➔ 抵達終點！
+            </div>
+            <button class="btn-action" onclick="startGame()">🚀 開始試玩示範</button>
+        </div>
+    </div>
+
+    <!-- 1. LOCATION SCREEN -->
+    <div id="location-screen" class="hidden">
+        <div class="card">
+            <div class="loc-title" id="loc-name">📍 載入中...</div>
+            <div class="scenario" id="scenario-text">...</div>
+            <div class="btn-group" id="choice-buttons"></div>
+        </div>
+    </div>
+
+    <!-- 2. MINI-GAME SCREEN -->
+    <div id="minigame-screen" class="hidden">
+        <div class="card">
+            <div style="font-size: 14px; color: #7f8c8d; margin-bottom: 5px;">🎯 Mini-Game：Stopwatch 盲測</div>
+            <div class="instruction-box">
+                <b>💡 示範說明：</b><br>
+                1. 按 <b>START</b> 開始計時（秒數會隱藏）。<br>
+                2. 心裡默數達到目標秒數時，按 <b>STOP</b>！
+            </div>
+            <div class="timer-box">目標：<span id="target-time">2.0</span> 秒</div>
+            <div id="timer-status" style="font-size: 18px; font-weight: bold; color: #e67e22; height: 35px; line-height:35px;">準備好了嗎？</div>
+            <div class="result-box hidden" id="game-result"></div>
+            
+            <div style="margin-top: 15px;">
+                <button id="btn-timer-start" class="btn-action" onclick="startTimer()">▶️ START（開始計時）</button>
+                <button id="btn-timer-stop" class="btn-stop hidden" onclick="stopTimer()">⏹️ STOP（按此停止！）</button>
+                <button id="btn-timer-next" class="btn-action hidden" onclick="completeMiniGame()">繼續旅程 ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. WINNING SCREEN -->
+    <div id="win-screen" class="hidden">
+        <div class="card" style="border-color: var(--success);">
+            <div class="loc-title" style="color: var(--success);">🎉 示範完成：抵達西奈山！</div>
+            <div class="scenario" style="text-align:center;">
+                你已成功體驗完整的遊戲流程。<br><br>
+                正片遊戲將包含多個地標路線與隨機驚喜廣告！
+            </div>
+            <button class="btn-action" onclick="location.reload()">🔄 重頭再試一次</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const demoNodes = {
+    1: { 
+        name: "第 1 站：埃及蘭塞 (起點)", 
+        text: "你準備率領大隊出發。眼前有兩條路：一條是走向紅海的正確主幹道，另一條是繞遠路的沙漠小路。",
+        right: { txt: "✅ 【正確路線】沿著大路走向紅海", next: 2 },
+        wrong: { txt: "❌ 【錯誤路線】走入偏僻沙漠小路", next: 1 } // wrong path loops back
+    },
+    2: { 
+        name: "第 2 站：紅海海邊", 
+        text: "前面就是紅海！神使海水分開。你要選擇跟隨雲柱向前過海，還是停留在原地？",
+        right: { txt: "✅ 【正確路線】跟隨雲柱跨越紅海", next: 3 },
+        wrong: { txt: "❌ 【錯誤路線】害怕猶豫，留在岸邊", next: 2 }
+    },
+    3: { 
+        name: "第 3 站：西奈山 (終點)", 
+        end: true 
+    }
+};
+
+let currentNode = 1;
+let pendingNextNode = null;
+let timerStartTime = 0;
+
+function startGame() {
+    currentNode = 1;
+    document.getElementById('home-screen').classList.add('hidden');
+    renderLocation();
+}
+
+function renderLocation() {
+    const node = demoNodes[currentNode];
+    if (node.end) {
+        document.getElementById('location-screen').classList.add('hidden');
+        document.getElementById('win-screen').classList.remove('hidden');
+        return;
+    }
+
+    document.getElementById('loc-name').innerText = node.name;
+    document.getElementById('scenario-text').innerText = node.text;
+
+    const choiceBox = document.getElementById('choice-buttons');
+    choiceBox.innerHTML = `
+        <button class="btn-correct" onclick="selectChoice(${node.right.next})">${node.right.txt}</button>
+        <button class="btn-wrong" onclick="selectChoice(${node.wrong.next}, true)">${node.wrong.txt}</button>
+    `;
+
+    document.getElementById('location-screen').classList.remove('hidden');
+    document.getElementById('minigame-screen').classList.add('hidden');
+}
+
+function selectChoice(nextNodeId, isWrong = false) {
+    if (isWrong) {
+        alert("⚠️ 這是錯誤路線！走錯路需要多做一次 Mini-game 挑戰！");
+    }
+    pendingNextNode = nextNodeId;
+    setupMiniGame();
+}
+
+function setupMiniGame() {
+    document.getElementById('location-screen').classList.add('hidden');
+    document.getElementById('minigame-screen').classList.remove('hidden');
+    
+    document.getElementById('timer-status').innerText = "按下 START 開始計時！";
+    document.getElementById('timer-status').style.color = "#e67e22";
+    document.getElementById('game-result').classList.add('hidden');
+    document.getElementById('btn-timer-start').classList.remove('hidden');
+    document.getElementById('btn-timer-stop').classList.add('hidden');
+    document.getElementById('btn-timer-next').classList.add('hidden');
+}
+
+function startTimer() {
+    timerStartTime = Date.now();
+    document.getElementById('btn-timer-start').classList.add('hidden');
+    document.getElementById('btn-timer-stop').classList.remove('hidden');
+    document.getElementById('timer-status').innerHTML = "⏱️ 計時中（已隱藏秒數）<br><span style='font-size:13px; color:#e74c3c;'>心裡默數 2 秒後按 STOP！</span>";
+}
+
+function stopTimer() {
+    const elapsedTime = (Date.now() - timerStartTime) / 1000;
+    document.getElementById('btn-timer-stop').classList.add('hidden');
+
+    const resultBox = document.getElementById('game-result');
+    resultBox.classList.remove('hidden');
+    document.getElementById('timer-status').innerText = "✓ 示範完成！";
+    document.getElementById('timer-status').style.color = "#27ae60";
+    resultBox.innerHTML = `你的時間：<b>${elapsedTime.toFixed(2)}</b> 秒`;
+    document.getElementById('btn-timer-next').classList.remove('hidden');
+}
+
+function completeMiniGame() {
+    currentNode = pendingNextNode;
+    renderLocation();
+}
+</script>
+
+</body>
+</html>
