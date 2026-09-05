@@ -183,7 +183,7 @@
             
             <div class="primary-warning-box" id="screenshot-notice">
                 <h3>⚠️ 勝出核實重要須知 ⚠️</h3>
-                <b>1. 📸 請立場截圖此畫面</b>（需清晰顯示上方時間戳記）。<br>
+                <b>1. 📸 請即截圖此畫面</b>（需清晰顯示上方時間戳記）。<br>
                 <b>2. 🎟️ 拍下你的「遊戲券」實體相片。</b><br>
                 <b>3. 📲 將【完成畫面截圖 + 遊戲券相片】一併傳送到 WhatsApp 大會群組！</b><br><br>
                 <span style="font-size:12px; color:#666;">*下方排行榜僅供現場參考，大會將嚴格以 WhatsApp 群組收到訊息的時間及完整相片為最終得獎依據。</span>
@@ -267,6 +267,8 @@ const churchAds = [
     "<b>「你以為選右邊就係屬靈正確？」</b><br><br>其實兩條路都係同一個設計師寫嘅，慢慢揀啦😏"
 ];
 
+const MAX_ADS_PER_RUN = 3;
+
 let currentNode = 1;
 let pendingNextNode = null;
 let timerTarget = 2.0;
@@ -276,12 +278,14 @@ let headerClickTracker = 0;
 let adTimerInterval = null;
 let adSecondsLeft = 15;
 let timerStartTime = 0;
+let runAdsViewed = 0;
 let totalAdsViewed = 0;
 let achievementUnlocked = false;
 
 function startGame() {
     currentNode = 1;
     nodeVisitedCount = 0;
+    runAdsViewed = 0;
     document.getElementById('home-screen').classList.add('hidden');
     renderLocation();
 }
@@ -327,7 +331,7 @@ function renderLocation() {
 
 function selectChoice(nextNodeId) {
     pendingNextNode = nextNodeId;
-    if (nodeVisitedCount > 2 && Math.random() < 0.35) {
+    if (nodeVisitedCount > 2 && runAdsViewed < MAX_ADS_PER_RUN && Math.random() < 0.35) {
         triggerChurchAdScreen();
     } else {
         setupNewTargetMiniGame();
@@ -335,6 +339,7 @@ function selectChoice(nextNodeId) {
 }
 
 function triggerChurchAdScreen() {
+    runAdsViewed++;
     totalAdsViewed++;
     document.getElementById('location-screen').classList.add('hidden');
     document.getElementById('minigame-screen').classList.add('hidden');
@@ -373,8 +378,7 @@ function closeAchievementModal() {
 }
 
 function completeAdScreen() {
-    currentNode = pendingNextNode;
-    renderLocation();
+    setupNewTargetMiniGame();
 }
 
 function setupNewTargetMiniGame() {
